@@ -1,0 +1,646 @@
+<title>Инфогрань</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Инфогрань — проверка запросов к публичному ИИ до отправки.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky header with segmented tabs, single centered column (max 56rem), cards stack on phones, table on desktop */
+:root {
+  --bg: 243 245 249;        /* холодный светлый фон */
+  --surface: 255 255 255;
+  --sunken: 237 240 246;
+  --ink: 14 25 48;
+  --muted: 86 98 122;
+  --line: 219 225 236;
+  --brand: 20 46 104;       /* тёмно-синий акцент */
+  --brand-soft: 230 236 248;
+  --on-brand: 255 255 255;
+  --ok: 22 122 64;   --ok-bg: 221 244 230;
+  --warn: 146 96 0;  --warn-bg: 254 243 196;
+  --anon: 190 72 6;  --anon-bg: 255 233 212;
+  --block: 180 30 36; --block-bg: 253 226 226;
+  --font-sans: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: 11 16 28; --surface: 19 27 44; --sunken: 14 21 36; --ink: 229 234 244; --muted: 148 160 184; --line: 40 52 76;
+    --brand: 132 165 236; --brand-soft: 30 43 74; --on-brand: 10 17 32;
+    --ok: 96 214 142; --ok-bg: 18 52 35; --warn: 245 201 72; --warn-bg: 58 45 8;
+    --anon: 252 150 78; --anon-bg: 66 34 12; --block: 250 118 118; --block-bg: 72 22 26;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: 11 16 28; --surface: 19 27 44; --sunken: 14 21 36; --ink: 229 234 244; --muted: 148 160 184; --line: 40 52 76;
+  --brand: 132 165 236; --brand-soft: 30 43 74; --on-brand: 10 17 32;
+  --ok: 96 214 142; --ok-bg: 18 52 35; --warn: 245 201 72; --warn-bg: 58 45 8;
+  --anon: 252 150 78; --anon-bg: 66 34 12; --block: 250 118 118; --block-bg: 72 22 26;
+  color-scheme: dark;
+}
+html { -webkit-text-size-adjust: 100%; }
+body { background: rgb(var(--bg)); color: rgb(var(--ink)); font-family: var(--font-sans); font-size: 15px; line-height: 1.5; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.mono { font-family: var(--font-mono); }
+.tnum { font-variant-numeric: tabular-nums; }
+.eyebrow { font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--muted)); }
+h1, h2, h3 { text-wrap: balance; }
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.scroll-x::-webkit-scrollbar { display: none; }
+:focus-visible { outline: 2px solid rgb(var(--brand)); outline-offset: 2px; }
+.spin { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.bar { animation: bar var(--dur, 900ms) cubic-bezier(.3,.6,.4,1) forwards; }
+@keyframes bar { from { width: 4%; } to { width: 100%; } }
+.rise { animation: rise .32s ease-out both; }
+@keyframes rise { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.flash { animation: flash 2.4s ease-out; }
+@keyframes flash { 0%, 30% { background: rgb(var(--brand-soft)); } 100% { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .spin, .bar, .rise, .flash { animation: none !important; } .bar { width: 100%; } }
+#boot { padding: 48px 16px; text-align: center; color: rgb(var(--muted)); }
+</style>
+
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  const c = (v) => `rgb(var(--${v}) / <alpha-value>)`;
+  tailwind.config = {
+    corePlugins: { preflight: true },
+    theme: {
+      extend: {
+        colors: {
+          bg: c('bg'), surface: c('surface'), sunken: c('sunken'), ink: c('ink'), muted: c('muted'), line: c('line'),
+          brand: c('brand'), 'brand-soft': c('brand-soft'), 'on-brand': c('on-brand'),
+          ok: c('ok'), 'ok-bg': c('ok-bg'), warn: c('warn'), 'warn-bg': c('warn-bg'),
+          anon: c('anon'), 'anon-bg': c('anon-bg'), block: c('block'), 'block-bg': c('block-bg'),
+        },
+      },
+    },
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+
+<div id="root"><div id="boot">Загрузка «Инфограни»…</div></div>
+
+<script id="detector">
+/* ===== Детектор: регулярки и правила ===== */
+const TYPES = {
+  FIO:      { label: 'ФИО',         tag: 'ФИО',         level: 'anon' },
+  PHONE:    { label: 'Телефон',     tag: 'ТЕЛЕФОН',     level: 'anon' },
+  EMAIL:    { label: 'Email',       tag: 'EMAIL',       level: 'anon' },
+  IP:       { label: 'IP-адрес',    tag: 'IP',          level: 'anon' },
+  INN:      { label: 'ИНН',         tag: 'ИНН',         level: 'warn' },
+  ORG:      { label: 'Организация', tag: 'ОРГАНИЗАЦИЯ', level: 'warn' },
+  ACCOUNT:  { label: 'Счёт',        tag: 'СЧЁТ',        level: 'block' },
+  CARD:     { label: 'Карта',       tag: 'КАРТА',       level: 'block' },
+  PASSPORT: { label: 'Паспорт',     tag: 'ПАСПОРТ',     level: 'block' },
+  APIKEY:   { label: 'Ключ API',    tag: 'КЛЮЧ',        level: 'block' },
+  PASSWORD: { label: 'Пароль',      tag: 'ПАРОЛЬ',      level: 'block' },
+};
+const TAG_TO_TYPE = Object.fromEntries(Object.entries(TYPES).map(([k, t]) => [t.tag, k]));
+
+const isPatronymic = (w) => /(?:вич|вн|ичн|ьич)[а-яё]{0,3}$/i.test(w);
+
+// Порядок = приоритет при пересечении: первое найденное правило забирает фрагмент.
+// Значение всегда в именованной группе v, и она стоит в конце совпадения.
+const RULES = [
+  ['PASSWORD', /(?:password|passwd|pwd|пароль)\s*[:=]\s*["']?(?<v>[^\s"',;]+)/gi],
+  ['APIKEY',   /(?:api[_-]?key|apikey|access[_-]?token|token|secret|client[_-]?secret)\s*[:=]\s*["']?(?<v>[^\s"',;]+)/gi],
+  ['APIKEY',   /(?<v>\b(?:sk|pk|rk)-[A-Za-z0-9_-]{8,})/g],
+  ['APIKEY',   /(?<v>\b(?:gh[pousr]_[A-Za-z0-9]{10,}|AKIA[0-9A-Z]{12,}|xox[bpa]-[A-Za-z0-9-]{10,}))/g],
+  ['ACCOUNT',  /(?<v>\b40\d{18}\b)/g],
+  ['CARD',     /(?<v>\b\d{4}(?:[ -]?\d{4}){3}\b)/g],
+  ['PASSPORT', /паспорт[а-яё]*\s*(?:рф\s*)?[:,]?\s*(?:серия\s*)?(?<v>\d{2}\s?\d{2}\s*(?:№|номер)?\s*\d{6})(?!\d)/gi],
+  ['PASSPORT', /(?<v>\b\d{2}\s\d{2}\s\d{6}\b)/g],
+  ['PHONE',    /(?<v>(?:\+7|\b8)[\s(-]*\d{3}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2})(?!\d)/g],
+  ['INN',      /(?<v>\b(?:\d{12}|\d{10})\b)/g],
+  ['EMAIL',    /(?<v>[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g],
+  ['IP',       /(?<v>\b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b)(?!\.\d)/g],
+  ['ORG',      /(?:^|[^А-ЯЁа-яёA-Za-z])(?<v>(?:ООО|ОАО|ЗАО|ПАО|АО|ИП|НКО)\s*["«„“][^"»“”]{1,60}["»“”])/g],
+  ['FIO',      /(?<v>[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s+[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+)/g, (v) => v.split(/\s+/).some(isPatronymic)],
+  ['FIO',      /(?<v>[А-ЯЁ][а-яё]+\s+[А-ЯЁ]\.\s?[А-ЯЁ]\.)/g],
+  ['FIO',      /(?<v>[А-ЯЁ]\.\s?[А-ЯЁ]\.\s?[А-ЯЁ][а-яё]+)/g],
+];
+
+function detect(text) {
+  const found = [];
+  for (const [type, re, validate] of RULES) {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(text))) {
+      const v = m.groups.v;
+      const start = m.index + m[0].length - v.length;
+      const end = start + v.length;
+      if (validate && !validate(v)) { re.lastIndex = m.index + 1; continue; }
+      if (!found.some((f) => start < f.end && end > f.start)) found.push({ type, start, end, value: v });
+    }
+  }
+  return found.sort((a, b) => a.start - b.start);
+}
+
+const LEVEL_RANK = { block: 3, warn: 2, anon: 1 };
+function decide(findings) {
+  let top = 0;
+  for (const f of findings) top = Math.max(top, LEVEL_RANK[TYPES[f.type].level]);
+  return ['allow', 'anon', 'warn', 'block'][top];
+}
+
+// Обратимое обезличивание: словарь «метка → исходное значение» живёт только в памяти.
+function anonymize(text, findings) {
+  const counters = {}, byValue = {}, dict = {};
+  let out = '', pos = 0;
+  for (const f of findings) {
+    const t = TYPES[f.type].tag;
+    const key = f.type + '|' + f.value;
+    let tag = byValue[key];
+    if (!tag) {
+      counters[t] = (counters[t] || 0) + 1;
+      tag = `<${t}_${counters[t]}>`;
+      byValue[key] = tag;
+      dict[tag] = f.value;
+    }
+    out += text.slice(pos, f.start) + tag;
+    pos = f.end;
+  }
+  return { sent: out + text.slice(pos), dict };
+}
+const restore = (text, dict) => text.replace(/<[A-ZА-ЯЁ]+_\d+>/g, (t) => dict[t] ?? t);
+
+function maskValue(type, v) {
+  const d = v.replace(/\D/g, '');
+  switch (type) {
+    case 'PHONE':    return `+7 ${d.slice(1, 4)} ***-**-${d.slice(-2)}`;
+    case 'EMAIL':    { const [u, dom] = v.split('@'); return `${u[0]}***@${dom}`; }
+    case 'FIO':      return v.split(/\s+/).map((w) => (w.endsWith('.') ? w : w[0] + '***')).join(' ');
+    case 'INN':      return d.slice(0, 2) + '*'.repeat(d.length - 4) + d.slice(-2);
+    case 'ACCOUNT':  return d.slice(0, 5) + '*'.repeat(11) + d.slice(-4);
+    case 'CARD':     return '**** **** **** ' + d.slice(-4);
+    case 'PASSPORT': return '** ** ****' + d.slice(-2);
+    case 'APIKEY':   { const p = v.match(/^[A-Za-z]+[-_](?:live[-_]|test[-_])?/); return (p ? p[0] : v.slice(0, 3)) + '****'; }
+    case 'PASSWORD': return '********';
+    case 'IP':       { const p = v.split('.'); return `${p[0]}.${p[1]}.*.*`; }
+    case 'ORG':      return v.replace(/(["«„“])(.)[^"»“”]*(["»“”])/, '$1$2***$3');
+    default:         return '***';
+  }
+}
+function maskText(text, findings) {
+  let out = '', pos = 0;
+  for (const f of findings) { out += text.slice(pos, f.start) + maskValue(f.type, f.value); pos = f.end; }
+  return out + text.slice(pos);
+}
+
+function analyze(text) {
+  const findings = detect(text);
+  const types = [...new Set(findings.map((f) => f.type))];
+  return { text, findings, types, decision: decide(findings), masked: maskText(text, findings) };
+}
+
+/* ===== Имитация ответа ИИ (работает только с метками) ===== */
+function mockAnswer(sent) {
+  const tags = [...new Set(sent.match(/<[A-ZА-ЯЁ]+_\d+>/g) || [])];
+  const first = (t) => tags.find((x) => x.startsWith('<' + t + '_'));
+  if (/REST|GraphQL/i.test(sent)) {
+    return 'REST и GraphQL — два подхода к построению API.\n\n• REST: много адресов-ресурсов (/users/42, /users/42/orders), у каждого фиксированный формат ответа. Легко кэшировать средствами HTTP.\n• GraphQL: один адрес, а клиент сам описывает в запросе, какие поля ему нужны. Нет лишних данных и лишних запросов, но сложнее кэширование и контроль нагрузки на сервер.\n\nКоротко: REST проще и привычнее, GraphQL удобнее, когда клиенту нужны данные из многих связанных сущностей.';
+  }
+  if (/письм/i.test(sent)) {
+    const fio = first('ФИО'), phone = first('ТЕЛЕФОН'), email = first('EMAIL');
+    let s = 'Тема: перенос сроков сдачи проекта\n';
+    if (fio) s += `Получатель: ${fio}\n`;
+    s += '\nДобрый день!\n\nСообщаем, что срок сдачи проекта переносится на две недели. Причина — дополнительное согласование технических требований. Остальные условия договора не меняются.\n\nОбновлённый график работ направим в течение двух рабочих дней.';
+    if (phone) s += ` Если удобно обсудить детали голосом, мы перезвоним по номеру ${phone}.`;
+    else if (email) s += ` Вопросы можно задать в ответном письме на ${email}.`;
+    return s + '\n\nС уважением,\nкоманда проекта';
+  }
+  if (/договор|реквизит|ИНН|сч[её]т/i.test(sent)) {
+    const org = first('ОРГАНИЗАЦИЯ'), inn = first('ИНН');
+    let s = `Проверил договор${org ? ' с ' + org : ''}. На что обратить внимание:\n\n`;
+    s += '• Срок оплаты не привязан к дате подписания акта — лучше указать конкретное число дней.\n• Нет пункта об ответственности за просрочку поставки.\n';
+    if (inn) s += `• Сверьте ИНН ${inn} с выпиской из ЕГРЮЛ перед подписанием.\n`;
+    return s + '\nВ остальном формулировки стандартные.';
+  }
+  let s = 'Разобрал запрос. Предлагаю действовать по шагам: уточнить цель, собрать исходные данные и проверить решение на небольшом примере. Пришлите больше контекста — отвечу подробнее.';
+  if (tags.length) s += '\n\nВ ответе учтены: ' + tags.join(', ') + '.';
+  return s;
+}
+</script>
+
+<script>
+(function () {
+const { useState, useEffect, useRef, useMemo } = React;
+const html = htm.bind(React.createElement);
+
+/* ---------- справочники интерфейса ---------- */
+const DEC = {
+  allow: { label: 'Разрешено',      cls: 'bg-ok-bg text-ok border-ok/30',          dot: 'bg-ok' },
+  anon:  { label: 'Обезличено',     cls: 'bg-anon-bg text-anon border-anon/30',    dot: 'bg-anon' },
+  warn:  { label: 'Предупреждение', cls: 'bg-warn-bg text-warn border-warn/30',    dot: 'bg-warn' },
+  block: { label: 'Заблокировано',  cls: 'bg-block-bg text-block border-block/30', dot: 'bg-block' },
+};
+const LEVEL_CLS = {
+  anon:  'bg-anon-bg text-anon ring-anon/40',
+  warn:  'bg-warn-bg text-warn ring-warn/40',
+  block: 'bg-block-bg text-block ring-block/40',
+};
+const EXAMPLES = [
+  { label: 'Чистый запрос', text: 'Объясни, чем отличается REST от GraphQL' },
+  { label: 'ФИО и телефон', text: 'Составь письмо клиенту Петрову Андрею Сергеевичу, тел. +7 913 123-45-67, о переносе сроков сдачи проекта' },
+  { label: 'Реквизиты',     text: 'Проверь договор с ООО "СибТехСтрой", ИНН 5406123456' },
+  { label: 'Ключ доступа',  text: 'Почему не работает запрос? api_key = sk-live-9f8a7b6c5d4e3f2a1b0c, сервер 10.0.12.45' },
+];
+const SEED = [
+  [7, 'Смирнов П.', 'Продажи',     'DeepSeek', 'Оплата по карте 2202 2034 5678 9012 не прошла, что ответить клиенту?'],
+  [31, 'Ким Д.',     'Разработка',  'GigaChat', 'Напиши регулярное выражение для проверки email в форме регистрации'],
+  [58, 'Орлова М.',  'Юристы',      'GigaChat', 'Как оформить доверенность? Паспорт представителя 50 12 345678', null],
+  [84, 'Смирнов П.', 'Продажи',     'GigaChat', 'Перезвонить Лебедеву К. А. по номеру 8 (923) 456-78-90 — подготовь тезисы для разговора'],
+  [113, 'Иванова Е.', 'Бухгалтерия', 'DeepSeek', 'Проверь платёжку: р/с 40702810900000054321, назначение платежа — аванс по договору'],
+  [146, 'Орлова М.',  'Юристы',      'DeepSeek', 'Сделай выжимку претензии от АО «ТрансЭнергоСервис», ИНН 5410987654', 'anonymized'],
+  [171, 'Ким Д.',     'Разработка',  'DeepSeek', 'Ошибка подключения: token=ghp_A1b2C3d4E5f6G7h8, хост 192.168.4.17'],
+  [203, 'Смирнов П.', 'Продажи',     'GigaChat', 'Напиши коммерческое предложение для Соколовой Марины Викторовны, email m.sokolova@agro-sib.ru'],
+  [232, 'Иванова Е.', 'Бухгалтерия', 'GigaChat', 'Сверь платёж от ООО «Альфа-Логистик», ИНН 7701234567, сумма 145 000 руб.', 'cancelled'],
+  [261, 'Ким Д.',     'Разработка',  'DeepSeek', 'Оптимизируй SQL-запрос: выборка заказов за последние 7 дней с группировкой по региону'],
+];
+let nextId = 1;
+function makeEvent(minAgo, employee, dept, service, text, outcome) {
+  const a = analyze(text);
+  const time = new Date(Date.now() - minAgo * 60000 - Math.round(Math.random() * 50000)).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return { id: nextId++, time, employee, dept, service, types: a.types, decision: a.decision, fragment: a.masked, outcome: outcome || null, isNew: false };
+}
+const fmtSec = (ms) => (ms / 1000).toFixed(1).replace('.', ',') + ' с';
+const nowTime = () => new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+const todayLabel = () => new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+const OUTCOME = { anonymized: 'сотрудник обезличил и отправил', cancelled: 'сотрудник отменил отправку', pending: 'ожидает решения сотрудника' };
+
+/* ---------- иконки ---------- */
+const I = (d, cls = 'w-4 h-4') => html`<svg viewBox="0 0 24 24" className=${cls} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">${d}</svg>`;
+const icons = {
+  check: (c) => I(html`<path d="M20 6 9 17l-5-5"/>`, c),
+  mask:  (c) => I(html`<path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z"/><path d="M3 3l18 18"/>`, c),
+  alert: (c) => I(html`<path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17.5v.01"/>`, c),
+  lock:  (c) => I(html`<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>`, c),
+  send:  (c) => I(html`<path d="M5 12h14M13 6l6 6-6 6"/>`, c),
+  shield:(c) => I(html`<path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>`, c),
+  down:  (c) => I(html`<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>`, c),
+  bot:   (c) => I(html`<rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 13h.01M15 13h.01"/>`, c),
+  user:  (c) => I(html`<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>`, c),
+  x:     (c) => I(html`<path d="M6 6l12 12M18 6 6 18"/>`, c),
+};
+const DEC_ICON = { allow: icons.check, anon: icons.mask, warn: icons.alert, block: icons.lock };
+
+/* ---------- мелкие компоненты ---------- */
+function Badge({ decision, big }) {
+  const d = DEC[decision];
+  const size = big ? 'text-[15px] px-3.5 py-2 gap-2 tracking-[.06em]' : 'text-[12px] px-2 py-0.5 gap-1.5';
+  return html`<span className=${`inline-flex items-center rounded-md border font-semibold uppercase whitespace-nowrap ${size} ${d.cls}`}>
+    ${DEC_ICON[decision](big ? 'w-5 h-5' : 'w-3.5 h-3.5')}${d.label}</span>`;
+}
+function TypeChip({ type }) {
+  const t = TYPES[type];
+  return html`<span className=${`inline-flex items-center rounded px-1.5 py-px text-[11.5px] font-semibold ring-1 ring-inset whitespace-nowrap ${LEVEL_CLS[t.level]}`}>${t.label}</span>`;
+}
+
+function Highlighted({ text, findings }) {
+  const parts = [];
+  let pos = 0;
+  findings.forEach((f, i) => {
+    if (f.start > pos) parts.push(text.slice(pos, f.start));
+    const t = TYPES[f.type];
+    parts.push(html`<mark key=${'f' + i} className=${`rounded px-1 py-px ring-1 ring-inset ${LEVEL_CLS[t.level]}`} style=${{ boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone' }}>
+      <span className="text-[10px] font-bold uppercase tracking-wide mr-1 opacity-80 align-[1px]">${t.label}</span>${f.value}</mark>`);
+    pos = f.end;
+  });
+  parts.push(text.slice(pos));
+  return html`<p className="leading-[1.9] break-words">${parts}</p>`;
+}
+
+// Текст с метками: метки — оранжевые плашки; restoreDict — показать исходные значения вместо меток
+function TagText({ text, restoreDict }) {
+  const parts = text.split(/(<[A-ZА-ЯЁ]+_\d+>)/g);
+  return html`<div className="whitespace-pre-wrap break-words leading-relaxed">${parts.map((p, i) => {
+    const m = p.match(/^<([A-ZА-ЯЁ]+)_\d+>$/);
+    if (!m) return p;
+    if (restoreDict) return html`<span key=${i} className="rounded bg-ok-bg text-ok px-1 font-medium" title=${'восстановлено из ' + p}>${restoreDict[p] ?? p}</span>`;
+    const lvl = TYPES[TAG_TO_TYPE[m[1]]]?.level || 'anon';
+    return html`<span key=${i} className=${`mono text-[12.5px] rounded px-1 py-px ring-1 ring-inset whitespace-nowrap ${LEVEL_CLS[lvl]}`}>${p}</span>`;
+  })}</div>`;
+}
+
+function Panel({ label, icon, children, tone = '' }) {
+  return html`<section className=${`rounded-lg border border-line bg-surface ${tone}`}>
+    <header className="flex items-center gap-2 px-4 pt-3 pb-1 eyebrow">${icon}${label}</header>
+    <div className="px-4 pb-4 pt-1 text-[14.5px] min-w-0">${children}</div>
+  </section>`;
+}
+
+/* ---------- шапка ---------- */
+function Logo() {
+  return html`<div className="flex items-center min-w-0">
+    <div className="min-w-0 leading-tight">
+      <div className="text-[19px] font-bold tracking-[-.01em] text-ink">Инфогрань</div>
+      <div className="text-[12.5px] text-muted truncate">Защита данных при работе с ИИ</div>
+    </div>
+  </div>`;
+}
+
+function Tabs({ tab, setTab, unseen }) {
+  const item = (id, label, extra) => html`<button id=${'tab-' + id} role="tab" aria-selected=${tab === id} onClick=${() => setTab(id)}
+      className=${`relative flex-1 sm:flex-none sm:px-6 h-10 rounded-md text-[14.5px] font-semibold transition-colors ${tab === id ? 'bg-surface text-brand shadow-sm ring-1 ring-line' : 'text-muted hover:text-ink'}`}>
+      ${label}${extra}</button>`;
+  return html`<div role="tablist" className="flex gap-1 p-1 rounded-lg bg-sunken">
+    ${item('employee', 'Сотрудник')}
+    ${item('journal', 'Журнал ИБ', unseen > 0 ? html`<span className="ml-1.5 inline-flex min-w-[20px] h-5 px-1.5 items-center justify-center rounded-full bg-brand text-on-brand text-[11.5px] tnum align-[1px]">${unseen}</span>` : null)}
+  </div>`;
+}
+
+/* ---------- вкладка «Сотрудник» ---------- */
+function Checking({ dur }) {
+  const steps = ['Поиск персональных данных', 'Проверка реквизитов', 'Поиск ключей и паролей'];
+  const [i, setI] = useState(0);
+  useEffect(() => { const t = setInterval(() => setI((x) => Math.min(x + 1, steps.length - 1)), dur / 3); return () => clearInterval(t); }, []);
+  return html`<div className="rounded-lg border border-line bg-surface p-4 rise" aria-live="polite">
+    <div className="flex items-center gap-3">
+      <svg viewBox="0 0 24 24" className="w-5 h-5 spin text-brand" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeOpacity=".2" strokeWidth="3"/><path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
+      <div className="font-semibold">Проверка запроса…</div>
+    </div>
+    <div className="mt-3 h-1.5 rounded-full bg-sunken overflow-hidden"><div className="bar h-full bg-brand rounded-full" style=${{ '--dur': dur + 'ms' }}></div></div>
+    <div className="mt-2 text-[13px] text-muted">${steps[i]}…</div>
+  </div>`;
+}
+
+function Intro() {
+  const rows = [
+    ['allow', 'данных нет — запрос уходит как есть'],
+    ['anon', 'ФИО, телефон, email заменяются метками'],
+    ['warn', 'реквизиты заказчика: решает сотрудник'],
+    ['block', 'ключи, пароли, карты, счета, паспорт'],
+  ];
+  return html`<div className="rounded-lg border border-dashed border-line p-4">
+    <div className="eyebrow mb-3">Как решает «Инфогрань»</div>
+    <ul className="grid gap-2.5">${rows.map(([d, t]) => html`<li key=${d} className="grid grid-cols-[auto,1fr] items-center gap-3 text-[14px]"><span className="w-[164px]"><${Badge} decision=${d}/></span><span className="text-muted min-w-0">${t}</span></li>`)}</ul>
+    <p className="mt-3 text-[13px] text-muted">Выберите пример выше или напишите свой запрос.</p>
+  </div>`;
+}
+
+function ResultCard({ r, onDecide, openJournal }) {
+  const { analysis: a } = r;
+  const showSent = a.decision === 'allow' || a.decision === 'anon' || (a.decision === 'warn' && r.outcome === 'anonymized');
+  return html`<article className="rounded-xl border border-line bg-surface shadow-sm rise overflow-hidden">
+    <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 border-b border-line">
+      <${Badge} decision=${a.decision} big/>
+      <div className="text-[13px] text-muted tnum">Время проверки: <b className="text-ink font-semibold">${fmtSec(r.ms)}</b></div>
+    </header>
+
+    <div className="p-4 grid gap-4">
+      <div>
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <span className="eyebrow">Запрос сотрудника</span>
+          ${a.types.length ? a.types.map((t) => html`<${TypeChip} key=${t} type=${t}/>`) : html`<span className="text-[12.5px] text-ok font-medium">чувствительных данных не найдено</span>`}
+        </div>
+        <div className="rounded-lg bg-sunken px-3.5 py-2.5 text-[14.5px]"><${Highlighted} text=${a.text} findings=${a.findings}/></div>
+      </div>
+
+      ${a.decision === 'block' && html`<div className="rounded-lg border border-block/30 bg-block-bg text-block p-4 flex gap-3">
+        ${icons.lock('w-6 h-6 shrink-0 mt-0.5')}
+        <div><div className="font-semibold text-[15.5px]">Запрос не отправлен</div>
+        <p className="mt-1 text-[14.5px]">Запрос содержит секретные данные и не был отправлен. Событие передано в службу ИБ.</p></div>
+      </div>`}
+
+      ${a.decision === 'warn' && r.outcome === 'pending' && html`<div className="rounded-lg border border-warn/30 bg-warn-bg text-warn p-4 flex flex-wrap items-center gap-3">
+        ${icons.alert('w-5 h-5 shrink-0')}<span className="font-semibold flex-1 min-w-[12rem]">В запросе реквизиты заказчика. Ожидает решения.</span>
+        <button onClick=${() => onDecide('reopen')} className="h-9 px-3 rounded-md bg-surface text-ink border border-line font-semibold text-[13.5px]">Выбрать действие</button>
+      </div>`}
+
+      ${a.decision === 'warn' && r.outcome === 'cancelled' && html`<div className="rounded-lg border border-line bg-sunken p-4 flex gap-3">
+        ${icons.x('w-5 h-5 shrink-0 mt-0.5 text-muted')}<div><div className="font-semibold">Отправка отменена сотрудником</div><p className="text-[14px] text-muted mt-0.5">Запрос не покинул компанию. Событие записано в журнал ИБ.</p></div>
+      </div>`}
+
+      ${showSent && html`<div className="grid gap-3">
+        <${Panel} label=${r.sent === a.text ? 'Ушло в ИИ без изменений' : 'Что реально ушло в ИИ'} icon=${icons.send('w-3.5 h-3.5')}>
+          <${TagText} text=${r.sent}/>
+        <//>
+        ${r.sent === a.text
+          ? html`<${Panel} label="Ответ ИИ" icon=${icons.bot('w-3.5 h-3.5')}><${TagText} text=${r.answer}/><//>`
+          : html`<div className="grid gap-3 md:grid-cols-2">
+              <${Panel} label="Ответ ИИ (с метками)" icon=${icons.bot('w-3.5 h-3.5')}><${TagText} text=${r.answer}/><//>
+              <${Panel} label="Ответ сотруднику" icon=${icons.user('w-3.5 h-3.5')} tone="!border-ok/40"><${TagText} text=${r.answer} restoreDict=${r.dict}/><//>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-lg bg-ok-bg text-ok px-4 py-3 font-semibold">${icons.shield('w-5 h-5 shrink-0')}Данные не покинули компанию</div>
+            <p className="text-[12.5px] text-muted -mt-1">Словарь «метка → значение» хранится только в памяти и не передаётся в ИИ: ${Object.keys(r.dict).length} ${plural(Object.keys(r.dict).length, 'метка', 'метки', 'меток')}.</p>`}
+      </div>`}
+    </div>
+
+    <footer className="px-4 py-3 border-t border-line bg-sunken/60 flex items-center justify-between gap-3 text-[13px]">
+      <span className="text-muted">Событие записано в журнал ИБ</span>
+      <button onClick=${openJournal} className="font-semibold text-brand inline-flex items-center gap-1 whitespace-nowrap">Открыть журнал ${icons.send('w-3.5 h-3.5')}</button>
+    </footer>
+  </article>`;
+}
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+}
+
+function WarnDialog({ onAnon, onCancel, types }) {
+  useEffect(() => { document.getElementById('warn-anon')?.focus(); }, []);
+  return html`<div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[rgb(var(--ink)/.45)]" role="dialog" aria-modal="true" aria-labelledby="warn-title">
+    <div className="w-full sm:max-w-md bg-surface sm:rounded-xl rounded-t-2xl shadow-2xl rise"
+         style=${{ paddingLeft: 'max(20px, env(safe-area-inset-left, 0px))', paddingRight: 'max(20px, env(safe-area-inset-right, 0px))', paddingTop: '20px', paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-warn-bg text-warn grid place-items-center shrink-0">${icons.alert('w-5 h-5')}</div>
+        <div className="min-w-0">
+          <h2 id="warn-title" className="text-[17px] font-bold">В запросе реквизиты заказчика</h2>
+          <p className="mt-1 text-[14px] text-muted">Найдено: ${types.map((t) => TYPES[t].label).join(', ')}. Их можно заменить метками — ИИ ответит по сути, а реальные значения вернутся в ответ уже внутри компании.</p>
+        </div>
+      </div>
+      <div className="mt-5 grid gap-2 sm:grid-cols-2">
+        <button id="warn-anon" onClick=${onAnon} className="h-11 rounded-lg bg-brand text-on-brand font-semibold sm:order-2">Обезличить и отправить</button>
+        <button onClick=${onCancel} className="h-11 rounded-lg border border-line font-semibold text-ink sm:order-1">Отменить</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function EmployeeTab({ onLog, onUpdateLog, openJournal }) {
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(null);       // { dur }
+  const [result, setResult] = useState(null);
+  const [dialog, setDialog] = useState(false);
+  const resultRef = useRef(null);
+
+  const submit = () => {
+    const t = text.trim();
+    if (!t || busy) return;
+    const dur = 600 + Math.round(Math.random() * 400);
+    setResult(null);
+    setBusy({ dur });
+    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    setTimeout(() => {
+      const analysis = analyze(t);
+      const r = { analysis, ms: dur, outcome: null, sent: null, answer: null, dict: {} };
+      if (analysis.decision === 'allow') { r.sent = t; r.answer = mockAnswer(t); }
+      if (analysis.decision === 'anon') { const an = anonymize(t, analysis.findings); r.sent = an.sent; r.dict = an.dict; r.answer = mockAnswer(an.sent); }
+      if (analysis.decision === 'warn') { r.outcome = 'pending'; setDialog(true); }
+      r.logId = onLog(analysis, r.outcome);
+      setBusy(null);
+      setResult(r);
+    }, dur);
+  };
+
+  const decideWarn = (choice) => {
+    if (choice === 'reopen') return setDialog(true);
+    setDialog(false);
+    setResult((r) => {
+      const n = { ...r, outcome: choice };
+      if (choice === 'anonymized') { const an = anonymize(r.analysis.text, r.analysis.findings); n.sent = an.sent; n.dict = an.dict; n.answer = mockAnswer(an.sent); }
+      onUpdateLog(r.logId, choice);
+      return n;
+    });
+  };
+
+  return html`<div className="grid gap-4">
+    <div>
+      <div className="eyebrow mb-2">Примеры запросов</div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        ${EXAMPLES.map((e, i) => html`<button key=${i} id=${'ex-' + i} onClick=${() => setText(e.text)}
+          className=${`text-left rounded-lg border px-3 py-2.5 text-[13.5px] font-semibold leading-snug transition-colors ${text === e.text ? 'border-brand bg-brand-soft text-brand' : 'border-line bg-surface hover:border-brand/50'}`}>
+          <span className="block text-[11px] font-medium text-muted mb-0.5 tnum">Пример ${i + 1}</span>${e.label}</button>`)}
+      </div>
+    </div>
+
+    <form onSubmit=${(e) => { e.preventDefault(); submit(); }} className="rounded-xl border border-line bg-surface shadow-sm focus-within:border-brand/60">
+      <label htmlFor="prompt" className="flex items-center justify-between px-4 pt-3 eyebrow"><span>Запрос к ИИ</span></label>
+      <textarea id="prompt" rows="4" value=${text} onInput=${(e) => setText(e.target.value)} onChange=${(e) => setText(e.target.value)}
+        onKeyDown=${(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submit(); }}
+        placeholder="Например: составь письмо клиенту о переносе сроков…"
+        className="block w-full resize-y bg-transparent px-4 py-2 text-[16px] leading-relaxed outline-none placeholder:text-muted/70 min-h-[110px]"></textarea>
+      <div className="flex items-center justify-between gap-3 px-3 pb-3">
+        <span className="text-[12px] text-muted pl-1 hidden sm:block">Ctrl + Enter — отправить</span>
+        <button type="submit" disabled=${!text.trim() || !!busy}
+          className="ml-auto h-11 px-5 rounded-lg bg-brand text-on-brand font-semibold inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed w-full sm:w-auto justify-center">
+          Отправить в ИИ ${icons.send('w-4 h-4')}</button>
+      </div>
+    </form>
+
+    <div ref=${resultRef} className="scroll-mt-24">
+      ${busy ? html`<${Checking} dur=${busy.dur}/>` : result ? html`<${ResultCard} r=${result} onDecide=${decideWarn} openJournal=${openJournal}/>` : html`<${Intro}/>`}
+    </div>
+    ${dialog && result && html`<${WarnDialog} types=${result.analysis.types} onAnon=${() => decideWarn('anonymized')} onCancel=${() => decideWarn('cancelled')}/>`}
+  </div>`;
+}
+
+/* ---------- вкладка «Журнал ИБ» ---------- */
+function Counter({ label, value, tone }) {
+  return html`<div className="rounded-lg border border-line bg-surface px-3.5 py-3 min-w-0">
+    <div className="flex items-center gap-1.5 text-[12.5px] text-muted font-medium leading-tight">${tone && html`<span className=${`w-2 h-2 rounded-full shrink-0 ${tone}`}></span>`}${label}</div>
+    <div className="mt-1 text-[28px] font-bold tnum leading-none text-ink">${value}</div>
+  </div>`;
+}
+
+function DecisionCell({ ev }) {
+  return html`<div className="grid gap-1 justify-items-start">
+    <${Badge} decision=${ev.decision}/>
+    ${ev.outcome && html`<span className=${`text-[11.5px] ${ev.outcome === 'pending' ? 'text-warn' : 'text-muted'}`}>${OUTCOME[ev.outcome]}</span>`}
+  </div>`;
+}
+const NewPill = () => html`<span className="inline-flex items-center rounded-full bg-brand text-on-brand text-[10.5px] font-bold uppercase tracking-wide px-1.5 py-px">новое</span>`;
+
+function JournalTab({ events }) {
+  const [filter, setFilter] = useState('all');
+  const shown = filter === 'all' ? events : events.filter((e) => e.decision === filter);
+  const count = (d) => events.filter((e) => e.decision === d).length;
+
+  const FILTERS = [['all', 'Все', events.length], ['allow', 'Разрешено', count('allow')], ['anon', 'Обезличено', count('anon')], ['warn', 'Предупреждения', count('warn')], ['block', 'Заблокировано', count('block')]];
+
+  return html`<div className="grid gap-4">
+    <div>
+      <div><div className="eyebrow">Сегодня, ${todayLabel()}</div><h2 className="text-[20px] font-bold mt-0.5">События проверки запросов</h2></div>
+    </div>
+
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+      <${Counter} label="Всего проверок" value=${events.length}/>
+      <${Counter} label="Обезличено" value=${count('anon')} tone="bg-anon"/>
+      <${Counter} label="Предупреждений" value=${count('warn')} tone="bg-warn"/>
+      <${Counter} label="Заблокировано" value=${count('block')} tone="bg-block"/>
+    </div>
+
+    <div className="scroll-x -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div role="radiogroup" aria-label="Фильтр по решению" className="flex gap-1.5 w-max">
+        ${FILTERS.map(([id, label, n]) => html`<button key=${id} id=${'flt-' + id} role="radio" aria-checked=${filter === id} onClick=${() => setFilter(id)}
+          className=${`h-9 px-3 rounded-full text-[13.5px] font-semibold border whitespace-nowrap inline-flex items-center gap-1.5 ${filter === id ? 'bg-brand text-on-brand border-brand' : 'bg-surface border-line text-ink hover:border-brand/50'}`}>
+          ${id !== 'all' && html`<span className=${`w-2 h-2 rounded-full ${DEC[id].dot}`}></span>`}${label}<span className="opacity-70 tnum">${n}</span></button>`)}
+      </div>
+    </div>
+
+    ${shown.length === 0 && html`<div className="rounded-lg border border-dashed border-line p-6 text-center text-muted">Событий с таким решением пока нет.</div>`}
+
+    <ul className="grid gap-2.5 md:hidden">
+      ${shown.map((e) => html`<li key=${e.id} className=${`rounded-lg border bg-surface p-3.5 ${e.isNew ? 'border-brand/60 flash' : 'border-line'}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap"><span className="font-semibold">${e.employee}</span>${e.isNew && html`<${NewPill}/>`}</div>
+            <div className="text-[12.5px] text-muted">${e.dept} · ${e.service ? e.service + ' · ' : ''}<span className="tnum">${e.time}</span></div>
+          </div>
+          <${DecisionCell} ev=${e}/>
+        </div>
+        ${e.types.length > 0 && html`<div className="flex flex-wrap gap-1 mt-2.5">${e.types.map((t) => html`<${TypeChip} key=${t} type=${t}/>`)}</div>`}
+        <div className="mono text-[12.5px] mt-2.5 rounded-md bg-sunken px-2.5 py-2 break-words text-ink/90">${e.fragment}</div>
+      </li>`)}
+    </ul>
+
+    ${shown.length > 0 && html`<div className="hidden md:block overflow-x-auto rounded-xl border border-line bg-surface">
+      <table className="w-full text-[13.5px] border-collapse">
+        <thead><tr className="text-left text-muted bg-sunken/70">
+          ${['Время', 'Сотрудник', 'ИИ-сервис', 'Найдено', 'Решение', 'Фрагмент запроса'].map((h) => html`<th key=${h} className="px-3 py-2.5 font-semibold text-[12px] uppercase tracking-[.06em] whitespace-nowrap">${h}</th>`)}
+        </tr></thead>
+        <tbody>${shown.map((e) => html`<tr key=${e.id} className=${`border-t border-line align-top ${e.isNew ? 'flash bg-brand-soft/40' : ''}`}>
+          <td className="px-3 py-3 tnum whitespace-nowrap">${e.time}${e.isNew && html`<div className="mt-1"><${NewPill}/></div>`}</td>
+          <td className="px-3 py-3 whitespace-nowrap"><div className="font-semibold">${e.employee}</div><div className="text-muted text-[12.5px]">${e.dept}</div></td>
+          <td className="px-3 py-3 whitespace-nowrap">${e.service || html`<span className="text-muted">—</span>`}</td>
+          <td className="px-3 py-3"><div className="flex flex-wrap gap-1 max-w-[170px]">${e.types.length ? e.types.map((t) => html`<${TypeChip} key=${t} type=${t}/>`) : html`<span className="text-muted">—</span>`}</div></td>
+          <td className="px-3 py-3"><${DecisionCell} ev=${e}/></td>
+          <td className="px-3 py-3 mono text-[12.5px] min-w-[240px] break-words">${e.fragment}</td>
+        </tr>`)}</tbody>
+      </table>
+    </div>`}
+
+    <p className="text-[12.5px] text-muted">Исходные значения в журнал не попадают: служба ИБ видит тип данных и замаскированный фрагмент.</p>
+  </div>`;
+}
+
+/* ---------- приложение ---------- */
+function App() {
+  const [tab, setTab] = useState(() => (location.hash === '#journal' ? 'journal' : 'employee'));
+  const [events, setEvents] = useState(() => SEED.map((s) => makeEvent(...s)));
+  const [unseen, setUnseen] = useState(0);
+
+  const go = (t) => { setTab(t); if (t === 'journal') setUnseen(0); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+  const onLog = (analysis, outcome) => {
+    const ev = { id: nextId++, time: nowTime(), employee: 'Вы', dept: 'Ваш отдел', service: '', types: analysis.types, decision: analysis.decision, fragment: analysis.masked, outcome, isNew: true };
+    setEvents((list) => [ev, ...list]);
+    setUnseen((n) => n + 1);
+    return ev.id;
+  };
+  const onUpdateLog = (id, outcome) => setEvents((list) => list.map((e) => (e.id === id ? { ...e, outcome } : e)));
+
+  return html`<div className="min-h-full flex flex-col">
+    <header className="sticky z-40 bg-bg/90 backdrop-blur border-b border-line" style=${{ top: 'env(safe-area-inset-top, 0px)' }}>
+      <div className="gutter max-w-4xl mx-auto py-3 grid gap-3 sm:flex sm:items-center sm:justify-between">
+        <${Logo}/>
+        <${Tabs} tab=${tab} setTab=${go} unseen=${unseen}/>
+      </div>
+    </header>
+    <main className="gutter max-w-4xl w-full mx-auto py-5 flex-1">
+      ${tab === 'employee'
+        ? html`<${EmployeeTab} onLog=${onLog} onUpdateLog=${onUpdateLog} openJournal=${() => go('journal')}/>`
+        : html`<${JournalTab} events=${events}/>`}
+    </main>
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+})();
+</script>
