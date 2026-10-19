@@ -6,7 +6,6 @@
 <title>Инфогрань</title>
 </head>
 <body>
-<meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Инфогрань — проверка запросов к публичному ИИ до отправки.">
 <style>
 @font-face {
@@ -770,7 +769,6 @@ function Intro() {
   return html`<div className="rounded-lg border border-dashed border-line p-4">
     <div className="eyebrow mb-3">Как решает «Инфогрань»</div>
     <ul className="grid gap-2.5">${rows.map(([d, t]) => html`<li key=${d} className="grid grid-cols-[auto,1fr] items-center gap-3 text-[14px]"><span className="w-[164px]"><${Badge} decision=${d}/></span><span className="text-muted min-w-0">${t}</span></li>`)}</ul>
-    <p className="mt-3 text-[13px] text-muted">Выберите пример выше или напишите свой запрос.</p>
   </div>`;
 }
 
@@ -906,7 +904,6 @@ function EmployeeTab({ onLog, onUpdateLog, openJournal }) {
       <label htmlFor="prompt" className="flex items-center justify-between px-4 pt-3 eyebrow"><span>Запрос к ИИ</span></label>
       <textarea id="prompt" rows="4" value=${text} onInput=${(e) => setText(e.target.value)} onChange=${(e) => setText(e.target.value)}
         onKeyDown=${(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submit(); }}
-        placeholder="Например: составь письмо клиенту о переносе сроков…"
         className="block w-full resize-y bg-transparent px-4 py-2 text-[16px] leading-relaxed outline-none placeholder:text-muted/70 min-h-[110px]"></textarea>
       <div className="flex items-center justify-between gap-3 px-3 pb-3">
         <span className="text-[12px] text-muted pl-1 hidden sm:block">Ctrl + Enter — отправить</span>
