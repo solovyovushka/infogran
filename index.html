@@ -6,7 +6,7 @@
 <title>Инфогрань</title>
 </head>
 <body>
-<meta name="description" content="Инфогрань — проверка запросов к публичному ИИ до отправки.">
+<meta name="description" content="Инфогрань — ИИ-чат для сотрудников, который не выпускает данные клиентов: обезличивание по правилам проекта.">
 <style>
 @font-face {
   font-family: 'IBM Plex Mono';
@@ -167,6 +167,79 @@ h1, h2, h3 { text-wrap: balance; }
 .flash { animation: flash 2.4s ease-out; }
 @keyframes flash { 0%, 30% { background: rgb(var(--brand-soft)); } 100% { background: transparent; } }
 @media (prefers-reduced-motion: reduce) { .spin, .bar, .rise, .flash { animation: none !important; } .bar { width: 100%; } }
+/* ===== Чат, проекты, правила (v2) ===== */
+.ig-card { background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-radius: 12px; }
+.ig-pad { padding: 14px 16px 16px; }
+.ig-mt { margin-top: 14px; }
+.ig-seg { display: grid; gap: 6px; }
+.ig-seg3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ig-seg4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 640px) { .ig-seg4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ig-opt, .ig-exb { text-align: left; min-width: 0; border: 1px solid rgb(var(--line)); background: rgb(var(--surface)); border-radius: 10px; padding: 8px 10px; color: rgb(var(--ink)); cursor: pointer; transition: border-color .15s, background .15s; }
+.ig-opt:hover, .ig-exb:hover:not(:disabled) { border-color: rgb(var(--brand) / .5); }
+.ig-opt[aria-pressed="true"] { border-color: rgb(var(--brand)); background: rgb(var(--brand-soft)); color: rgb(var(--brand)); box-shadow: inset 0 0 0 1px rgb(var(--brand)); }
+.ig-opt-t { display: block; font-weight: 600; font-size: 14px; line-height: 1.25; overflow-wrap: anywhere; }
+.ig-opt-s { display: block; font-size: 11.5px; color: rgb(var(--muted)); margin-top: 2px; line-height: 1.3; }
+.ig-off .ig-opt-s { color: rgb(var(--block)); }
+.ig-off .ig-opt-t { text-decoration: line-through; text-decoration-color: rgb(var(--block) / .6); }
+.ig-note { margin: 10px 0 0; font-size: 13.5px; color: rgb(var(--ink)); }
+.ig-rules { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ig-rule { font-size: 12px; line-height: 1.35; border-radius: 8px; padding: 3px 8px; border: 1px solid; }
+.ig-rule b { font-weight: 600; }
+.ig-rule-anon  { background: rgb(var(--anon-bg));  color: rgb(var(--anon));  border-color: rgb(var(--anon) / .3); }
+.ig-rule-scale { background: rgb(var(--brand-soft)); color: rgb(var(--brand)); border-color: rgb(var(--brand) / .3); }
+.ig-rule-warn  { background: rgb(var(--warn-bg));  color: rgb(var(--warn));  border-color: rgb(var(--warn) / .3); }
+.ig-rule-block { background: rgb(var(--block-bg)); color: rgb(var(--block)); border-color: rgb(var(--block) / .3); }
+.ig-rule-ok    { background: rgb(var(--ok-bg));    color: rgb(var(--ok));    border-color: rgb(var(--ok) / .3); }
+.ig-ex { display: grid; gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 640px) { .ig-ex { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.ig-exb:disabled { opacity: .5; cursor: progress; }
+.ig-fine { margin: 6px 0 0; font-size: 12px; color: rgb(var(--muted)); }
+.ig-hero h1 { font-size: 20px; line-height: 1.25; font-weight: 700; margin: 0; }
+.ig-hero > p { margin: 8px 0 0; font-size: 14.5px; color: rgb(var(--muted)); }
+.ig-steps { list-style: none; padding: 0; margin: 14px 0 16px; display: grid; gap: 8px; }
+@media (min-width: 640px) { .ig-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ig-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; background: rgb(var(--sunken)); border-radius: 10px; padding: 10px 12px; }
+.ig-steps b { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: rgb(var(--brand)); color: rgb(var(--on-brand)); font-size: 12px; }
+.ig-btn { height: 40px; padding: 0 16px; border-radius: 9px; font-weight: 600; font-size: 14px; border: 1px solid rgb(var(--line)); background: rgb(var(--surface)); color: rgb(var(--ink)); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.ig-pri { background: rgb(var(--brand)); color: rgb(var(--on-brand)); border-color: rgb(var(--brand)); }
+.ig-thread { display: flex; flex-direction: column; gap: 14px; }
+.ig-user { align-self: flex-end; width: fit-content; max-width: min(100%, 640px); }
+.ig-ai { align-self: flex-start; width: fit-content; max-width: min(100%, 680px); }
+.ig-ubox { background: rgb(var(--brand-soft)); border: 1px solid rgb(var(--brand) / .2); border-radius: 14px 14px 4px 14px; padding: 10px 14px; }
+.ig-abox { background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-radius: 14px 14px 14px 4px; padding: 10px 14px; }
+.ig-text { margin: 0; font-size: 15px; line-height: 1.85; overflow-wrap: anywhere; }
+.ig-pre { white-space: pre-wrap; line-height: 1.6; }
+.ig-who { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: rgb(var(--muted)); margin: 0 4px 4px; }
+.ig-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 10px; margin-top: 6px; font-size: 12.5px; color: rgb(var(--muted)); }
+.ig-left { justify-content: flex-start; margin: 0; }
+.ig-qi-note { color: rgb(var(--warn)); }
+.ig-act { margin-top: 8px; border: 1px solid; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; }
+.ig-act-warn  { background: rgb(var(--warn-bg));  color: rgb(var(--warn));  border-color: rgb(var(--warn) / .35); }
+.ig-act-block { background: rgb(var(--block-bg)); color: rgb(var(--block)); border-color: rgb(var(--block) / .35); }
+.ig-act-h { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+.ig-act ul { margin: 6px 0 0; padding-left: 18px; color: rgb(var(--ink)); }
+.ig-act li + li { margin-top: 3px; }
+.ig-act p { margin: 6px 0 0; color: rgb(var(--ink)); }
+.ig-act .ig-fine { color: rgb(var(--muted)); }
+.ig-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.ig-ok { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 6px 4px 0; font-size: 12.5px; font-weight: 600; color: rgb(var(--ok)); }
+.ig-ok > svg { flex: none; }
+.ig-ok > span { flex: 1 1 14rem; min-width: 0; }
+.ig-link { background: none; border: 0; padding: 0; color: rgb(var(--brand)); font-weight: 600; font-size: 12.5px; cursor: pointer; text-transform: none; letter-spacing: 0; }
+.ig-peek { margin-top: 8px; border: 1px dashed rgb(var(--line)); border-radius: 12px; padding: 10px 14px 12px; background: rgb(var(--sunken)); }
+.ig-peek h4 { margin: 8px 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: rgb(var(--muted)); }
+.ig-peek h4:first-child { margin-top: 0; }
+.ig-peek .ig-text { font-size: 14px; }
+.ig-qi-mark { background: none; color: inherit; text-decoration: underline dotted rgb(var(--warn)); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.ig-chip-qi { background: rgb(var(--warn-bg)); color: rgb(var(--warn)); --tw-ring-color: rgb(var(--warn) / .4); box-shadow: inset 0 0 0 1px rgb(var(--warn) / .4); }
+.ig-chip-scale { background: rgb(var(--brand-soft)); color: rgb(var(--brand)); box-shadow: inset 0 0 0 1px rgb(var(--brand) / .4); }
+.ig-scaled { background: rgb(var(--brand-soft)); color: rgb(var(--brand)); border-radius: 4px; padding: 0 4px; font-family: var(--font-mono); font-size: .9em; box-shadow: inset 0 0 0 1px rgb(var(--brand) / .35); white-space: nowrap; }
+.ig-restored { background: rgb(var(--ok-bg)); color: rgb(var(--ok)); border-radius: 4px; padding: 0 4px; font-weight: 500; }
+.ig-money { display: flex; gap: 12px; align-items: flex-start; border-radius: 12px; padding: 12px 14px; background: rgb(var(--ok-bg)); color: rgb(var(--ok)); }
+.ig-money b { font-size: 15px; }
+.ig-money p { margin: 3px 0 0; font-size: 13.5px; color: rgb(var(--ink)); }
+/* ===== /v2 ===== */
 #boot { padding: 48px 16px; text-align: center; color: rgb(var(--muted)); }
 </style>
 
@@ -476,48 +549,113 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 <div id="root"><div id="boot">Загрузка «Инфограни»…</div></div>
 
 <script id="detector">
-/* ===== Детектор: регулярки и правила ===== */
+/* ===== Типы данных ===== */
 const TYPES = {
-  FIO:      { label: 'ФИО',         tag: 'ФИО',         level: 'anon' },
-  PHONE:    { label: 'Телефон',     tag: 'ТЕЛЕФОН',     level: 'anon' },
-  EMAIL:    { label: 'Email',       tag: 'EMAIL',       level: 'anon' },
-  IP:       { label: 'IP-адрес',    tag: 'IP',          level: 'anon' },
-  INN:      { label: 'ИНН',         tag: 'ИНН',         level: 'warn' },
-  ORG:      { label: 'Организация', tag: 'ОРГАНИЗАЦИЯ', level: 'warn' },
-  ACCOUNT:  { label: 'Счёт',        tag: 'СЧЁТ',        level: 'block' },
-  CARD:     { label: 'Карта',       tag: 'КАРТА',       level: 'block' },
-  PASSPORT: { label: 'Паспорт',     tag: 'ПАСПОРТ',     level: 'block' },
-  APIKEY:   { label: 'Ключ API',    tag: 'КЛЮЧ',        level: 'block' },
-  PASSWORD: { label: 'Пароль',      tag: 'ПАРОЛЬ',      level: 'block' },
+  FIO:      { label: 'ФИО',            tag: 'ФИО' },
+  PHONE:    { label: 'Телефон',        tag: 'ТЕЛЕФОН' },
+  EMAIL:    { label: 'Email',          tag: 'EMAIL' },
+  INN:      { label: 'ИНН',            tag: 'ИНН' },
+  ORG:      { label: 'Организация',    tag: 'ОРГ' },
+  CLIENT:   { label: 'Клиент проекта', tag: 'КЛИЕНТ' },
+  CONTRACT: { label: 'Договор',     tag: 'ДОГОВОР' },
+  SUM:      { label: 'Сумма',          tag: 'СУММА' },
+  ACCOUNT:  { label: 'Расчётный счёт', tag: 'СЧЁТ' },
+  CARD:     { label: 'Карта',          tag: 'КАРТА' },
+  PASSPORT: { label: 'Паспорт',        tag: 'ПАСПОРТ' },
+  SNILS:    { label: 'СНИЛС',          tag: 'СНИЛС' },
+  PASSWORD: { label: 'Пароль',         tag: 'ПАРОЛЬ' },
+  // косвенные признаки клиента (мозаичный эффект)
+  GEO:      { label: 'Город',          tag: 'ГОРОД',     qi: true },
+  INDUSTRY: { label: 'Отрасль',        tag: 'ОТРАСЛЬ',   qi: true },
+  SIZE:     { label: 'Масштаб',        tag: 'МАСШТАБ',   qi: true },
+  PERIOD:   { label: 'Сроки',          tag: 'СРОК',      qi: true },
+  ROLE:     { label: 'Должность',      tag: 'ДОЛЖНОСТЬ', qi: true },
+  // только для журнала
+  MOSAIC:   { label: 'Мозаика' },
+  MODEL:    { label: 'Зарубежный ИИ' },
 };
-const TAG_TO_TYPE = Object.fromEntries(Object.entries(TYPES).map(([k, t]) => [t.tag, k]));
+const TAG_TO_TYPE = Object.fromEntries(Object.entries(TYPES).filter(([, t]) => t.tag).map(([k, t]) => [t.tag, k]));
+const PD_TYPES = ['FIO', 'PHONE', 'EMAIL', 'PASSPORT', 'SNILS'];
+const TAG_SRC = '<[A-ZА-ЯЁ]+_\\d+>';
 
+/* ===== Проекты и нейросети: правила берутся из карточки проекта и договора клиента ===== */
+const PROJECTS = [
+  { id: 'nda', name: 'Банк Север', badge: 'NDA', noForeign: true,
+    note: 'Договор № 12/2026 с NDA: данные клиента не покидают компанию, зарубежные нейросети запрещены.',
+    dict: [['CLIENT', /(?<v>Банк[а-яё]*\s+«?Север[а-яё]*»?)/g], ['CLIENT', /(?<v>Север-Онлайн[а-яё]*)/g]],
+    act: { FIO: 'anon', PHONE: 'anon', EMAIL: 'anon', INN: 'anon', ORG: 'anon', CLIENT: 'anon', CONTRACT: 'anon', SUM: 'scale',
+           ACCOUNT: 'block', CARD: 'block', PASSPORT: 'block', SNILS: 'block', PASSWORD: 'block' } },
+  { id: 'agro', name: 'Агро-Сиб', badge: 'Обычный договор', noForeign: false,
+    note: 'Без NDA: персональные данные обезличиваются, реквизиты клиента — на усмотрение сотрудника.',
+    dict: [['CLIENT', /(?<v>Агро-?Сиб[а-яё]*)/gi]],
+    act: { FIO: 'anon', PHONE: 'anon', EMAIL: 'anon', INN: 'warn', ORG: 'warn', CLIENT: 'warn', CONTRACT: 'pass', SUM: 'pass',
+           ACCOUNT: 'block', CARD: 'block', PASSPORT: 'block', SNILS: 'block', PASSWORD: 'block' } },
+  { id: 'internal', name: 'Внутренние задачи', badge: 'Без клиента', noForeign: false,
+    note: 'Работа без данных клиентов: защищаются персональные данные сотрудников и платёжные реквизиты.',
+    dict: [],
+    act: { FIO: 'anon', PHONE: 'anon', EMAIL: 'anon', INN: 'pass', ORG: 'pass', CLIENT: 'pass', CONTRACT: 'pass', SUM: 'pass',
+           ACCOUNT: 'block', CARD: 'block', PASSPORT: 'block', SNILS: 'block', PASSWORD: 'block' } },
+];
+const MODELS = [
+  { id: 'GigaChat',  foreign: false, note: 'Россия' },
+  { id: 'YandexGPT', foreign: false, note: 'Россия' },
+  { id: 'DeepSeek',  foreign: true,  note: 'зарубежная' },
+  { id: 'ChatGPT',   foreign: true,  note: 'зарубежная' },
+];
+
+/* ===== Суммы ===== */
+const RUB = '(?:руб(?:лей|ля|ль)?\\.?|₽)';
+const MONEY_SRC = `\\d{1,3}(?:[ \\u00a0\\u202f]\\d{3})+(?:[.,]\\d{1,2})?\\s?${RUB}|\\d+(?:[.,]\\d+)?\\s?(?:млрд|млн|тыс\\.?)\\s?${RUB}|\\d+(?:[.,]\\d+)?\\s?${RUB}`;
+const moneyRe = () => new RegExp(`(?<![\\d.,])(?<v>${MONEY_SRC})`, 'g');
+function parseMoney(s) {
+  const mult = /млрд/.test(s) ? 1e9 : /млн/.test(s) ? 1e6 : /тыс/.test(s) ? 1e3 : 1;
+  const num = s.match(/\d[\d   ]*(?:[.,]\d+)?/)[0].replace(/[   ]/g, '').replace(',', '.');
+  return parseFloat(num) * mult;
+}
+function fmtMoney(n, like) {
+  const unit = /₽/.test(like) ? '₽' : 'руб.';
+  const f = (x, d) => x.toLocaleString('ru-RU', { maximumFractionDigits: d });
+  if (/млрд/.test(like)) return `${f(n / 1e9, 2)} млрд ${unit}`;
+  if (/млн/.test(like)) return `${f(n / 1e6, 2)} млн ${unit}`;
+  if (/тыс/.test(like)) return `${f(n / 1e3, 1)} тыс. ${unit}`;
+  return `${f(Math.round(n), 0)} ${unit}`;
+}
+// Секретный коэффициент диалога: все суммы умножаются на него, поэтому доли и проценты не меняются
+const pickK = () => +(Math.random() < 0.5 ? 0.55 + Math.random() * 0.3 : 1.2 + Math.random() * 0.3).toFixed(3);
+
+/* ===== Правила поиска. Порядок = приоритет при пересечении; значение — в группе v в конце совпадения ===== */
 const isPatronymic = (w) => /(?:вич|вн|ичн|ьич)[а-яё]{0,3}$/i.test(w);
-
-// Порядок = приоритет при пересечении: первое найденное правило забирает фрагмент.
-// Значение всегда в именованной группе v, и она стоит в конце совпадения.
-const RULES = [
-  ['PASSWORD', /(?:password|passwd|pwd|пароль)\s*[:=]\s*["']?(?<v>[^\s"',;]+)/gi],
-  ['APIKEY',   /(?:api[_-]?key|apikey|access[_-]?token|token|secret|client[_-]?secret)\s*[:=]\s*["']?(?<v>[^\s"',;]+)/gi],
-  ['APIKEY',   /(?<v>\b(?:sk|pk|rk)-[A-Za-z0-9_-]{8,})/g],
-  ['APIKEY',   /(?<v>\b(?:gh[pousr]_[A-Za-z0-9]{10,}|AKIA[0-9A-Z]{12,}|xox[bpa]-[A-Za-z0-9-]{10,}))/g],
+const BASE_RULES = [
+  ['PASSWORD', /(?:пароль|password)[^:=\n]{0,30}[:=]\s*["']?(?<v>[^\s"',;]+)/gi],
   ['ACCOUNT',  /(?<v>\b40\d{18}\b)/g],
   ['CARD',     /(?<v>\b\d{4}(?:[ -]?\d{4}){3}\b)/g],
+  ['SNILS',    /(?<v>\b\d{3}-\d{3}-\d{3}[ -]\d{2}\b)/g],
   ['PASSPORT', /паспорт[а-яё]*\s*(?:рф\s*)?[:,]?\s*(?:серия\s*)?(?<v>\d{2}\s?\d{2}\s*(?:№|номер)?\s*\d{6})(?!\d)/gi],
   ['PASSPORT', /(?<v>\b\d{2}\s\d{2}\s\d{6}\b)/g],
   ['PHONE',    /(?<v>(?:\+7|\b8)[\s(-]*\d{3}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2})(?!\d)/g],
   ['INN',      /(?<v>\b(?:\d{12}|\d{10})\b)/g],
   ['EMAIL',    /(?<v>[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g],
-  ['IP',       /(?<v>\b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b)(?!\.\d)/g],
+  ['CONTRACT', /(?:договор[а-яё]*|контракт[а-яё]*|соглашени[а-яё]*)\s*(?:№|N|No\.?)\s*(?<v>[0-9A-Za-zА-ЯЁа-яё](?:[0-9A-Za-zА-ЯЁа-яё\/-]*[0-9A-Za-zА-ЯЁа-яё])?)/gi],
+  ['SUM',      moneyRe()],
   ['ORG',      /(?:^|[^А-ЯЁа-яёA-Za-z])(?<v>(?:ООО|ОАО|ЗАО|ПАО|АО|ИП|НКО)\s*["«„“][^"»“”]{1,60}["»“”])/g],
-  ['FIO',      /(?<v>[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s+[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+)/g, (v) => v.split(/\s+/).some(isPatronymic)],
-  ['FIO',      /(?<v>[А-ЯЁ][а-яё]+\s+[А-ЯЁ]\.\s?[А-ЯЁ]\.)/g],
-  ['FIO',      /(?<v>[А-ЯЁ]\.\s?[А-ЯЁ]\.\s?[А-ЯЁ][а-яё]+)/g],
+];
+const FIO_RULES = [
+  ['FIO', /(?<v>[А-ЯЁ][а-яё]+(?:-[А-ЯЁ][а-яё]+)?\s+[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+)/g, (v) => v.split(/\s+/).some(isPatronymic)],
+  ['FIO', /(?<v>[А-ЯЁ][а-яё]+\s+[А-ЯЁ]\.\s?[А-ЯЁ]\.)/g],
+  ['FIO', /(?<v>[А-ЯЁ]\.\s?[А-ЯЁ]\.\s?[А-ЯЁ][а-яё]+)/g],
+];
+const NL = '(?<![А-ЯЁа-яё])';
+const QI_RULES = [
+  ['GEO',      new RegExp(`${NL}(?<v>(?:Новосибирск|Москв|Санкт-Петербург|Томск|Барнаул|Кемеров|Омск|Красноярск|Бердск|Екатеринбург)[а-яё]*)`, 'g')],
+  ['INDUSTRY', new RegExp(`${NL}(?<v>(?:банк|агрохолдинг|застройщик|девелопер|сет[а-яё]* аптек|сет[а-яё]* магазин|завод|клиник|страхов[а-яё]* компани)[а-яё]*)`, 'gi')],
+  ['SIZE',     /(?<v>(?:(?:около|более|свыше|почти)\s+)?\d+[\s ]*(?:филиал|сотрудник|человек|офис|магазин|склад)[а-яё]*)/gi],
+  ['PERIOD',   new RegExp(`${NL}(?<v>(?:(?:в|к|до|с)\\s+)?(?:январ[яеь]|феврал[яеь]|март[ае]?|апрел[яеь]|ма[йяе]|июн[яеь]|июл[яеь]|август[ае]?|сентябр[яеь]|октябр[яеь]|ноябр[яеь]|декабр[яеь])(?:\\s+20\\d\\d)?)(?![А-ЯЁа-яё])`, 'gi')],
+  ['ROLE',     /(?<v>(?:генеральн|финансов|исполнительн|коммерческ)[а-яё]*\s+директор[а-яё]*|главн[а-яё]*\s+бухгалтер[а-яё]*|собственник[а-яё]*)/gi],
 ];
 
-function detect(text) {
-  const found = [];
-  for (const [type, re, validate] of RULES) {
+function detect(text, rules, taken = []) {
+  const found = [...taken];
+  for (const [type, re, validate] of rules) {
     re.lastIndex = 0;
     let m;
     while ((m = re.exec(text))) {
@@ -528,36 +666,69 @@ function detect(text) {
       if (!found.some((f) => start < f.end && end > f.start)) found.push({ type, start, end, value: v });
     }
   }
-  return found.sort((a, b) => a.start - b.start);
+  return found.slice(taken.length).sort((a, b) => a.start - b.start);
 }
 
-const LEVEL_RANK = { block: 3, warn: 2, anon: 1 };
-function decide(findings) {
+const RANK = { anon: 1, scale: 1, warn: 2, block: 3 };
+const uniq = (a) => [...new Set(a)];
+const lc = (s) => (/^[А-ЯЁA-Z]{2,}/.test(s) ? s : s[0].toLowerCase() + s.slice(1));
+
+function analyze(text, project, model, dialogQI) {
+  const all = detect(text, [...BASE_RULES, ...project.dict, ...FIO_RULES]);
+  all.forEach((f) => { f.action = project.act[f.type] || 'pass'; });
+  const findings = all.filter((f) => f.action !== 'pass');
+  const qi = detect(text, QI_RULES, all);
+  const cats = uniq(qi.map((f) => f.type));
+  const known = [...dialogQI];
+  const newCats = cats.filter((c) => !dialogQI.has(c));
+  const mosaic = newCats.length > 0 && known.length + newCats.length >= 3;
+  const modelBlocked = project.noForeign && model.foreign;
+
   let top = 0;
-  for (const f of findings) top = Math.max(top, LEVEL_RANK[TYPES[f.type].level]);
-  return ['allow', 'anon', 'warn', 'block'][top];
+  for (const f of findings) top = Math.max(top, RANK[f.action]);
+  if (mosaic) top = Math.max(top, 2);
+  if (modelBlocked) top = 3;
+  const decision = ['allow', 'anon', 'warn', 'block'][top];
+
+  const of = (act) => uniq(findings.filter((f) => f.action === act).map((f) => TYPES[f.type].label));
+  const reasons = [];
+  if (modelBlocked) reasons.push(`Договор с клиентом «${project.name}» запрещает зарубежные нейросети: ${model.id} недоступен.`);
+  if (of('block').length) reasons.push(`Эти данные нельзя передавать ни в одну нейросеть: ${of('block').join(', ')}.`);
+  if (of('warn').length) reasons.push(`Реквизиты клиента: ${of('warn').join(', ')}. По договору это решает сотрудник.`);
+  if (mosaic) reasons.push(`Мозаичный эффект: нейросеть уже знает ${known.map((c) => lc(TYPES[c].label)).join(', ') || '—'}, а это сообщение добавит ${newCats.map((c) => lc(TYPES[c].label)).join(', ')}. По такому набору клиента легко вычислить.`);
+
+  return { text, findings, qi, cats, newCats, mosaic, modelBlocked, decision, reasons,
+           types: uniq(findings.map((f) => f.type)), masked: maskText(text, findings) };
 }
 
-// Обратимое обезличивание: словарь «метка → исходное значение» живёт только в памяти.
-function anonymize(text, findings) {
-  const counters = {}, byValue = {}, dict = {};
+// Обратимая замена: метки и коэффициент хранит сервер «Инфограни», нейросеть их не получает
+function transform(text, items, vault, k) {
   let out = '', pos = 0;
-  for (const f of findings) {
-    const t = TYPES[f.type].tag;
-    const key = f.type + '|' + f.value;
-    let tag = byValue[key];
-    if (!tag) {
-      counters[t] = (counters[t] || 0) + 1;
-      tag = `<${t}_${counters[t]}>`;
-      byValue[key] = tag;
-      dict[tag] = f.value;
+  const marks = [];
+  for (const f of [...items].sort((a, b) => a.start - b.start)) {
+    let rep;
+    if (f.action === 'scale') { rep = fmtMoney(parseMoney(f.value) * k, f.value); marks.push(rep); }
+    else {
+      const t = TYPES[f.type].tag, key = f.type + '|' + f.value;
+      rep = vault.byValue[key];
+      if (!rep) {
+        vault.counters[t] = (vault.counters[t] || 0) + 1;
+        rep = `<${t}_${vault.counters[t]}>`;
+        vault.byValue[key] = rep;
+        vault.dict[rep] = f.value;
+      }
     }
-    out += text.slice(pos, f.start) + tag;
+    out += text.slice(pos, f.start) + rep;
     pos = f.end;
   }
-  return { sent: out + text.slice(pos), dict };
+  return { sent: out + text.slice(pos), marks };
 }
-const restore = (text, dict) => text.replace(/<[A-ZА-ЯЁ]+_\d+>/g, (t) => dict[t] ?? t);
+function restoreAnswer(answer, vault, k, scaled) {
+  const marks = [];
+  let t = answer.replace(new RegExp(TAG_SRC, 'g'), (tag) => (vault.dict[tag] ? (marks.push(vault.dict[tag]), vault.dict[tag]) : tag));
+  if (scaled) t = t.replace(moneyRe(), (m) => { const r = fmtMoney(parseMoney(m) / k, m); marks.push(r); return r; });
+  return { text: t, marks };
+}
 
 function maskValue(type, v) {
   const d = v.replace(/\D/g, '');
@@ -569,9 +740,11 @@ function maskValue(type, v) {
     case 'ACCOUNT':  return d.slice(0, 5) + '*'.repeat(11) + d.slice(-4);
     case 'CARD':     return '**** **** **** ' + d.slice(-4);
     case 'PASSPORT': return '** ** ****' + d.slice(-2);
-    case 'APIKEY':   { const p = v.match(/^[A-Za-z]+[-_](?:live[-_]|test[-_])?/); return (p ? p[0] : v.slice(0, 3)) + '****'; }
+    case 'SNILS':    return '***-***-*** ' + d.slice(-2);
     case 'PASSWORD': return '********';
-    case 'IP':       { const p = v.split('.'); return `${p[0]}.${p[1]}.*.*`; }
+    case 'SUM':      return v.replace(/\d[\d   .,]*\d|\d/, (m) => m[0] + '***');
+    case 'CONTRACT': return '***' + v.slice(-2);
+    case 'CLIENT':   return v[0] + '***';
     case 'ORG':      return v.replace(/(["«„“])(.)[^"»“”]*(["»“”])/, '$1$2***$3');
     default:         return '***';
   }
@@ -582,36 +755,54 @@ function maskText(text, findings) {
   return out + text.slice(pos);
 }
 
-function analyze(text) {
-  const findings = detect(text);
-  const types = [...new Set(findings.map((f) => f.type))];
-  return { text, findings, types, decision: decide(findings), masked: maskText(text, findings) };
-}
-
-/* ===== Имитация ответа ИИ (работает только с метками) ===== */
+/* ===== Имитация ответа нейросети: она видит только метки и изменённые суммы ===== */
+const pct = (x) => x.toLocaleString('ru-RU', { maximumFractionDigits: 1 }) + '%';
 function mockAnswer(sent) {
-  const tags = [...new Set(sent.match(/<[A-ZА-ЯЁ]+_\d+>/g) || [])];
+  const tags = uniq(sent.match(new RegExp(TAG_SRC, 'g')) || []);
   const first = (t) => tags.find((x) => x.startsWith('<' + t + '_'));
-  if (/REST|GraphQL/i.test(sent)) {
-    return 'REST и GraphQL — два подхода к построению API.\n\n• REST: много адресов-ресурсов (/users/42, /users/42/orders), у каждого фиксированный формат ответа. Легко кэшировать средствами HTTP.\n• GraphQL: один адрес, а клиент сам описывает в запросе, какие поля ему нужны. Нет лишних данных и лишних запросов, но сложнее кэширование и контроль нагрузки на сервер.\n\nКоротко: REST проще и привычнее, GraphQL удобнее, когда клиенту нужны данные из многих связанных сущностей.';
+  const all = (t) => tags.filter((x) => x.startsWith('<' + t + '_'));
+  const sums = [...sent.matchAll(moneyRe())].map((m) => ({ str: m[0], val: parseMoney(m[0]) }));
+
+  if (/дол[яюеи]|процент/i.test(sent) && sums.length >= 2) {
+    const [tot, part] = sums[0].val >= sums[1].val ? sums : [sums[1], sums[0]];
+    const share = (part.val / tot.val) * 100;
+    const who = first('КЛИЕНТ') || first('ОРГ') || 'клиента';
+    return `Доля клиента ${who} в выручке — ${pct(share)}.\nНа остальных клиентов приходится ${fmtMoney(tot.val - part.val, tot.str)} — это ${pct(100 - share)}.\n\nРасчёт: ${part.str} ÷ ${tot.str} × 100%. Если доля одного клиента больше 20%, стоит оценить риск зависимости от него.`;
+  }
+  if (/претензи/i.test(sent)) {
+    const org = first('ОРГ') || first('КЛИЕНТ') || (sent.match(/(?:ООО|ПАО|ЗАО|АО|ИП)\s*«[^»]+»/) || [])[0] || 'контрагенту', dog = first('ДОГОВОР'), fio = first('ФИО'), phone = first('ТЕЛЕФОН');
+    const num = dog || (sent.match(/№\s*([\w\/-]+)/) || [])[1];
+    let s = `Проект ответа на претензию\n\nКому: ${org}\n\nПретензию${num ? ' по договору № ' + num : ''} получили и рассмотрели. `;
+    if (sums[0]) s += `Задолженность в размере ${sums[0].str} признаём и готовы погасить её в течение 10 рабочих дней с даты этого письма. `;
+    s += 'Просим не начислять неустойку за этот период: просрочка вызвана задержкой поступлений от нашего заказчика.';
+    if (fio) s += `\n\nКонтактное лицо: ${fio}${phone ? ', тел. ' + phone : ''}.`;
+    return s;
+  }
+  if (/отпускн/i.test(sent)) {
+    const fio = first('ФИО'), sum = sums[0];
+    let s = `Расчёт отпускных${fio ? '. Сотрудник: ' + fio : ''}\n\n`;
+    if (sum) {
+      const day = (sum.val * 12) / 12 / 29.3;
+      s += `• Средний дневной заработок: ${sum.str} × 12 ÷ 12 ÷ 29,3 = ${fmtMoney(day, '0 руб.')}\n• За 14 календарных дней: ${fmtMoney(day * 14, '0 руб.')}\n\n`;
+    }
+    return s + 'Проверьте, были ли в расчётном периоде больничные: их дни исключаются из расчёта. Отпускные выплачиваются не позднее чем за 3 дня до начала отпуска.';
+  }
+  if (/УСН/i.test(sent)) {
+    return 'УСН «доходы» — налог 6% со всей выручки, расходы не учитываются. Выгодна, когда расходы меньше 60% доходов.\n\nУСН «доходы минус расходы» — 15% с разницы, но нужно подтверждать каждый расход документами, а при убытке платится минимальный налог 1% с выручки.\n\nДля небольшого ООО с услугами без закупок обычно выгоднее «доходы».';
+  }
+  if (/внедрени|сколько займ/i.test(sent)) {
+    const sz = all('МАСШТАБ'), when = first('СРОК');
+    const scale = sz.length ? ` такого масштаба (${sz.join(', ')})` : '';
+    return `Для организации${scale} внедрение регламента обычно занимает 6–8 недель: 2 недели на аудит процессов, 3 недели на документы и обучение, остальное — на проверку в подразделениях.\n\n${when ? `Запуск ${when} реален, если начать аудит в ближайшие две недели.` : 'Начните с аудита: он покажет объём работ точнее.'}`;
+  }
+  if (/152-ФЗ|регламент|персональн/i.test(sent)) {
+    return 'Начните с трёх шагов:\n\n1. Опишите, какие персональные данные клиента обрабатываются и где они хранятся.\n2. Назначьте ответственного и утвердите политику обработки ПДн.\n3. Подготовьте уведомление в Роскомнадзор, если его ещё не подавали.\n\nПотом — согласия, журнал учёта и порядок уничтожения данных.';
   }
   if (/письм/i.test(sent)) {
-    const fio = first('ФИО'), phone = first('ТЕЛЕФОН'), email = first('EMAIL');
-    let s = 'Тема: перенос сроков сдачи проекта\n';
-    if (fio) s += `Получатель: ${fio}\n`;
-    s += '\nДобрый день!\n\nСообщаем, что срок сдачи проекта переносится на две недели. Причина — дополнительное согласование технических требований. Остальные условия договора не меняются.\n\nОбновлённый график работ направим в течение двух рабочих дней.';
-    if (phone) s += ` Если удобно обсудить детали голосом, мы перезвоним по номеру ${phone}.`;
-    else if (email) s += ` Вопросы можно задать в ответном письме на ${email}.`;
-    return s + '\n\nС уважением,\nкоманда проекта';
+    const fio = first('ФИО'), phone = first('ТЕЛЕФОН');
+    return `Тема: перенос сроков\n${fio ? 'Получатель: ' + fio + '\n' : ''}\nДобрый день!\n\nСообщаем, что срок сдачи отчётности переносится на неделю. Остальные условия договора не меняются.${phone ? ` Если удобно обсудить голосом, перезвоним по номеру ${phone}.` : ''}\n\nС уважением,\nбухгалтерия`;
   }
-  if (/договор|реквизит|ИНН|сч[её]т/i.test(sent)) {
-    const org = first('ОРГАНИЗАЦИЯ'), inn = first('ИНН');
-    let s = `Проверил договор${org ? ' с ' + org : ''}. На что обратить внимание:\n\n`;
-    s += '• Срок оплаты не привязан к дате подписания акта — лучше указать конкретное число дней.\n• Нет пункта об ответственности за просрочку поставки.\n';
-    if (inn) s += `• Сверьте ИНН ${inn} с выпиской из ЕГРЮЛ перед подписанием.\n`;
-    return s + '\nВ остальном формулировки стандартные.';
-  }
-  let s = 'Разобрал запрос. Предлагаю действовать по шагам: уточнить цель, собрать исходные данные и проверить решение на небольшом примере. Пришлите больше контекста — отвечу подробнее.';
+  let s = 'Разобрал запрос. Предлагаю действовать по шагам: уточнить цель, собрать исходные документы и проверить решение на небольшом примере.';
   if (tags.length) s += '\n\nВ ответе учтены: ' + tags.join(', ') + '.';
   return s;
 }
@@ -619,7 +810,7 @@ function mockAnswer(sent) {
 
 <script>
 (function () {
-const { useState, useEffect, useRef, useMemo } = React;
+const { useState, useEffect, useRef } = React;
 const html = htm.bind(React.createElement);
 
 /* ---------- справочники интерфейса ---------- */
@@ -633,35 +824,62 @@ const LEVEL_CLS = {
   anon:  'bg-anon-bg text-anon ring-anon/40',
   warn:  'bg-warn-bg text-warn ring-warn/40',
   block: 'bg-block-bg text-block ring-block/40',
+  scale: 'ig-chip-scale',
+  qi:    'ig-chip-qi',
 };
+const ACTIONS = [['anon', 'Обезличить'], ['scale', 'Изменить коэффициентом'], ['warn', 'Спросить сотрудника'], ['block', 'Не отправлять']];
 const EXAMPLES = [
-  { label: 'Чистый запрос', text: 'Объясни, чем отличается REST от GraphQL' },
-  { label: 'ФИО и телефон', text: 'Составь письмо клиенту Петрову Андрею Сергеевичу, тел. +7 913 123-45-67, о переносе сроков сдачи проекта' },
-  { label: 'Реквизиты',     text: 'Проверь договор с ООО "СибТехСтрой", ИНН 5406123456' },
-  { label: 'Ключ доступа',  text: 'Почему не работает запрос? api_key = sk-live-9f8a7b6c5d4e3f2a1b0c, сервер 10.0.12.45' },
+  { label: 'Вопрос без данных', text: 'Чем УСН «доходы» отличается от «доходы минус расходы» для небольшого ООО?' },
+  { label: 'Ответ на претензию', text: 'Подготовь ответ на претензию ПАО «Банк Север» по договору № 45/2026: просрочка оплаты 1 250 000 руб. Контакт — Кузнецова Ольга Павловна, тел. +7 913 123-45-67' },
+  { label: 'Доля клиента в выручке', text: 'Выручка за квартал — 12 400 000 руб., из них Банк Север — 3 100 000 руб. Какая доля у клиента и сколько приходится на остальных?' },
+  { label: 'Отпускные со СНИЛС', text: 'Проверь расчёт отпускных: Лебедева Ксения Андреевна, СНИЛС 112-233-445 95, оклад 85 000 руб.' },
+  { label: 'Мозаика: 2 сообщения', steps: [
+    'Наш клиент — региональный банк из Новосибирска. С чего начать регламент по 152-ФЗ?',
+    'У них 3 филиала и около 400 сотрудников, запуск — в декабре. Сколько займёт внедрение?',
+  ] },
 ];
 const SEED = [
-  [7, 'Смирнов П.', 'Продажи',     'DeepSeek', 'Оплата по карте 2202 2034 5678 9012 не прошла, что ответить клиенту?'],
-  [31, 'Ким Д.',     'Разработка',  'GigaChat', 'Напиши регулярное выражение для проверки email в форме регистрации'],
-  [58, 'Орлова М.',  'Юристы',      'GigaChat', 'Как оформить доверенность? Паспорт представителя 50 12 345678', null],
-  [84, 'Смирнов П.', 'Продажи',     'GigaChat', 'Перезвонить Лебедеву К. А. по номеру 8 (923) 456-78-90 — подготовь тезисы для разговора'],
-  [113, 'Иванова Е.', 'Бухгалтерия', 'DeepSeek', 'Проверь платёжку: р/с 40702810900000054321, назначение платежа — аванс по договору'],
-  [146, 'Орлова М.',  'Юристы',      'DeepSeek', 'Сделай выжимку претензии от АО «ТрансЭнергоСервис», ИНН 5410987654', 'anonymized'],
-  [171, 'Ким Д.',     'Разработка',  'DeepSeek', 'Ошибка подключения: token=ghp_A1b2C3d4E5f6G7h8, хост 192.168.4.17'],
-  [203, 'Смирнов П.', 'Продажи',     'GigaChat', 'Напиши коммерческое предложение для Соколовой Марины Викторовны, email m.sokolova@agro-sib.ru'],
-  [232, 'Иванова Е.', 'Бухгалтерия', 'GigaChat', 'Сверь платёж от ООО «Альфа-Логистик», ИНН 7701234567, сумма 145 000 руб.', 'cancelled'],
-  [261, 'Ким Д.',     'Разработка',  'DeepSeek', 'Оптимизируй SQL-запрос: выборка заказов за последние 7 дней с группировкой по региону'],
+  [6,   'Иванова Е.', 'Бухгалтерия',     'nda',      'GigaChat',  'Сверь акт с ПАО «Банк Север» по договору № 12/2026, сальдо 4 380 000 руб.'],
+  [24,  'Орлова М.',  'Юристы',          'agro',     'YandexGPT', 'Сделай выжимку претензии от ООО «Агро-Сиб», ИНН 5410987654', 'anonymized'],
+  [41,  'Петров С.',  'Зарплата и кадры', 'internal', 'GigaChat',  'Проверь отпускные: Лебедева Ксения Андреевна, СНИЛС 112-233-445 95'],
+  [67,  'Иванова Е.', 'Бухгалтерия',     'internal', 'YandexGPT', 'Чем УСН «доходы» отличается от «доходы минус расходы»?'],
+  [88,  'Орлова М.',  'Юристы',          'nda',      'DeepSeek',  'Перепиши пункт об ответственности в договоре с Банком Севером'],
+  [115, 'Иванова Е.', 'Бухгалтерия',     'agro',     'GigaChat',  'Проверь платёжку: р/с 40702810900000054321, аванс по договору'],
+  [139, 'Кузнецов Д.', 'Руководство',    'nda',      'GigaChat',  'Письмо Кузнецовой Ольге Павловне, тел. +7 913 123-45-67: перенос сдачи отчётности'],
+  [164, 'Орлова М.',  'Юристы',          'agro',     'YandexGPT', 'Сверь платёж от ООО «Агро-Сиб», ИНН 5406123456, сумма 145 000 руб.', 'cancelled'],
+  [190, 'Петров С.',  'Зарплата и кадры', 'internal', 'GigaChat',  'Как рассчитать НДФЛ с годовой премии сотрудника?'],
+  [222, 'Иванова Е.', 'Бухгалтерия',     'nda',      'GigaChat',  'Посчитай долю Банка Севера в выручке: 12 400 000 руб. из 51 000 000 руб.'],
 ];
-let nextId = 1;
-function makeEvent(minAgo, employee, dept, service, text, outcome) {
-  const a = analyze(text);
-  const time = new Date(Date.now() - minAgo * 60000 - Math.round(Math.random() * 50000)).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  return { id: nextId++, time, employee, dept, service, types: a.types, decision: a.decision, fragment: a.masked, outcome: outcome || null, isNew: false };
-}
-const fmtSec = (ms) => (ms / 1000).toFixed(1).replace('.', ',') + ' с';
-const nowTime = () => new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+const OUTCOME = { anonymized: 'сотрудник обезличил и отправил', asis: 'сотрудник отправил как есть', cancelled: 'сотрудник отменил отправку', pending: 'ожидает решения сотрудника' };
+const projectById = (id) => PROJECTS.find((p) => p.id === id);
+const modelById = (id) => MODELS.find((m) => m.id === id);
+const nowTime = (d = new Date()) => d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 const todayLabel = () => new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-const OUTCOME = { anonymized: 'сотрудник обезличил и отправил', cancelled: 'сотрудник отменил отправку', pending: 'ожидает решения сотрудника' };
+const cap = (s) => s[0].toUpperCase() + s.slice(1);
+let nextId = 1;
+const uid = () => nextId++;
+
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+}
+
+// Событие журнала: служба видит тип данных и замаскированный фрагмент, исходные значения туда не попадают
+function makeEvent({ time, employee, dept, project, model, a, outcome, isNew }) {
+  const chips = a.findings.reduce((acc, f) => (acc.some((c) => c.type === f.type) ? acc : [...acc, { type: f.type, action: f.action }]), []);
+  if (a.mosaic) chips.push({ type: 'MOSAIC', action: 'warn' });
+  if (a.modelBlocked) chips.push({ type: 'MODEL', action: 'block' });
+  return { id: uid(), time, employee, dept, project: project.name, service: model.id, chips, decision: a.decision,
+           fragment: a.masked, outcome: outcome || null, n: a.findings.length,
+           pd: a.findings.some((f) => PD_TYPES.includes(f.type)), isNew: !!isNew };
+}
+const seedEvents = () => SEED.map(([min, employee, dept, pid, mid, text, outcome]) => {
+  const project = projectById(pid), model = modelById(mid);
+  return makeEvent({ time: nowTime(new Date(Date.now() - min * 60000 - Math.round(Math.random() * 50000))), employee, dept, project, model,
+                     a: analyze(text, project, model, new Set()), outcome });
+});
 
 /* ---------- иконки ---------- */
 const I = (d, cls = 'w-4 h-4') => html`<svg viewBox="0 0 24 24" className=${cls} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">${d}</svg>`;
@@ -672,56 +890,55 @@ const icons = {
   lock:  (c) => I(html`<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>`, c),
   send:  (c) => I(html`<path d="M5 12h14M13 6l6 6-6 6"/>`, c),
   shield:(c) => I(html`<path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>`, c),
-  down:  (c) => I(html`<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>`, c),
   bot:   (c) => I(html`<rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 13h.01M15 13h.01"/>`, c),
-  user:  (c) => I(html`<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>`, c),
   x:     (c) => I(html`<path d="M6 6l12 12M18 6 6 18"/>`, c),
 };
 const DEC_ICON = { allow: icons.check, anon: icons.mask, warn: icons.alert, block: icons.lock };
+const Spinner = () => html`<svg viewBox="0 0 24 24" className="w-4 h-4 spin text-brand" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeOpacity=".2" strokeWidth="3"/><path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>`;
 
 /* ---------- мелкие компоненты ---------- */
-function Badge({ decision, big }) {
+function Badge({ decision }) {
   const d = DEC[decision];
-  const size = big ? 'text-[15px] px-3.5 py-2 gap-2 tracking-[.06em]' : 'text-[12px] px-2 py-0.5 gap-1.5';
-  return html`<span className=${`inline-flex items-center rounded-md border font-semibold uppercase whitespace-nowrap ${size} ${d.cls}`}>
-    ${DEC_ICON[decision](big ? 'w-5 h-5' : 'w-3.5 h-3.5')}${d.label}</span>`;
+  return html`<span className=${`inline-flex items-center rounded-md border font-semibold uppercase whitespace-nowrap text-[12px] px-2 py-0.5 gap-1.5 ${d.cls}`}>
+    ${DEC_ICON[decision]('w-3.5 h-3.5')}${d.label}</span>`;
 }
-function TypeChip({ type }) {
-  const t = TYPES[type];
-  return html`<span className=${`inline-flex items-center rounded px-1.5 py-px text-[11.5px] font-semibold ring-1 ring-inset whitespace-nowrap ${LEVEL_CLS[t.level]}`}>${t.label}</span>`;
+function Chip({ type, action }) {
+  const cls = TYPES[type].qi ? LEVEL_CLS.qi : LEVEL_CLS[action];
+  return html`<span className=${`inline-flex items-center rounded px-1.5 py-px text-[11.5px] font-semibold ring-1 ring-inset whitespace-nowrap ${cls}`}>${TYPES[type].label}</span>`;
 }
 
-function Highlighted({ text, findings }) {
+// Запрос сотрудника с подсветкой найденного
+function Highlighted({ text, findings, qi }) {
+  const items = [...findings, ...qi].sort((a, b) => a.start - b.start);
   const parts = [];
   let pos = 0;
-  findings.forEach((f, i) => {
+  items.forEach((f, i) => {
     if (f.start > pos) parts.push(text.slice(pos, f.start));
     const t = TYPES[f.type];
-    parts.push(html`<mark key=${'f' + i} className=${`rounded px-1 py-px ring-1 ring-inset ${LEVEL_CLS[t.level]}`} style=${{ boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone' }}>
-      <span className="text-[10px] font-bold uppercase tracking-wide mr-1 opacity-80 align-[1px]">${t.label}</span>${f.value}</mark>`);
+    parts.push(t.qi
+      ? html`<mark key=${'f' + i} className="ig-qi-mark" title=${'Косвенный признак клиента: ' + lc(t.label)}>${f.value}</mark>`
+      : html`<mark key=${'f' + i} className=${`rounded px-1 py-px ring-1 ring-inset ${LEVEL_CLS[f.action]}`} style=${{ boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone' }}>
+          <span className="text-[10px] font-bold uppercase tracking-wide mr-1 opacity-80 align-[1px]">${t.label}</span>${f.value}</mark>`);
     pos = f.end;
   });
   parts.push(text.slice(pos));
-  return html`<p className="leading-[1.9] break-words">${parts}</p>`;
+  return html`<p className="ig-text">${parts}</p>`;
 }
 
-// Текст с метками: метки — оранжевые плашки; restoreDict — показать исходные значения вместо меток
-function TagText({ text, restoreDict }) {
-  const parts = text.split(/(<[A-ZА-ЯЁ]+_\d+>)/g);
-  return html`<div className="whitespace-pre-wrap break-words leading-relaxed">${parts.map((p, i) => {
-    const m = p.match(/^<([A-ZА-ЯЁ]+)_\d+>$/);
-    if (!m) return p;
-    if (restoreDict) return html`<span key=${i} className="rounded bg-ok-bg text-ok px-1 font-medium" title=${'восстановлено из ' + p}>${restoreDict[p] ?? p}</span>`;
-    const lvl = TYPES[TAG_TO_TYPE[m[1]]]?.level || 'anon';
-    return html`<span key=${i} className=${`mono text-[12.5px] rounded px-1 py-px ring-1 ring-inset whitespace-nowrap ${LEVEL_CLS[lvl]}`}>${p}</span>`;
+// Текст с метками и отмеченными фрагментами: mode 'raw' — как видела нейросеть, 'restored' — что получил сотрудник
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function Rich({ text, marks = [], mode }) {
+  const re = new RegExp(`(${[TAG_SRC, ...uniq(marks).sort((a, b) => b.length - a.length).map(esc)].join('|')})`, 'g');
+  const parts = text.split(re);
+  return html`<div className="ig-text ig-pre">${parts.map((p, i) => {
+    if (i % 2 === 0) return p;
+    const tm = p.match(/^<([A-ZА-ЯЁ]+)_\d+>$/);
+    if (tm) {
+      const type = TAG_TO_TYPE[tm[1]];
+      return html`<span key=${i} className=${`mono text-[12.5px] rounded px-1 py-px ring-1 ring-inset whitespace-nowrap ${TYPES[type]?.qi ? LEVEL_CLS.qi : LEVEL_CLS.anon}`}>${p}</span>`;
+    }
+    return html`<span key=${i} className=${mode === 'restored' ? 'ig-restored' : 'ig-scaled'} title=${mode === 'restored' ? 'восстановлено «Инфогранью»' : 'сумма изменена секретным коэффициентом'}>${p}</span>`;
   })}</div>`;
-}
-
-function Panel({ label, icon, children, tone = '' }) {
-  return html`<section className=${`rounded-lg border border-line bg-surface ${tone}`}>
-    <header className="flex items-center gap-2 px-4 pt-3 pb-1 eyebrow">${icon}${label}</header>
-    <div className="px-4 pb-4 pt-1 text-[14.5px] min-w-0">${children}</div>
-  </section>`;
 }
 
 /* ---------- шапка ---------- */
@@ -729,205 +946,238 @@ function Logo() {
   return html`<div className="flex items-center min-w-0">
     <div className="min-w-0 leading-tight">
       <div className="text-[19px] font-bold tracking-[-.01em] text-ink">Инфогрань</div>
-      <div className="text-[12.5px] text-muted truncate">Защита данных при работе с ИИ</div>
+      <div className="text-[12.5px] text-muted truncate">ИИ-чат, который не выпускает данные клиентов</div>
     </div>
   </div>`;
 }
-
 function Tabs({ tab, setTab, unseen }) {
   const item = (id, label, extra) => html`<button id=${'tab-' + id} role="tab" aria-selected=${tab === id} onClick=${() => setTab(id)}
       className=${`relative flex-1 sm:flex-none sm:px-6 h-10 rounded-md text-[14.5px] font-semibold transition-colors ${tab === id ? 'bg-surface text-brand shadow-sm ring-1 ring-line' : 'text-muted hover:text-ink'}`}>
       ${label}${extra}</button>`;
   return html`<div role="tablist" className="flex gap-1 p-1 rounded-lg bg-sunken">
     ${item('employee', 'Сотрудник')}
-    ${item('journal', 'Журнал ИБ', unseen > 0 ? html`<span className="ml-1.5 inline-flex min-w-[20px] h-5 px-1.5 items-center justify-center rounded-full bg-brand text-on-brand text-[11.5px] tnum align-[1px]">${unseen}</span>` : null)}
+    ${item('journal', 'Руководитель', unseen > 0 ? html`<span className="ml-1.5 inline-flex min-w-[20px] h-5 px-1.5 items-center justify-center rounded-full bg-brand text-on-brand text-[11.5px] tnum align-[1px]">${unseen}</span>` : null)}
   </div>`;
 }
 
 /* ---------- вкладка «Сотрудник» ---------- */
-function Checking({ dur }) {
-  const steps = ['Поиск персональных данных', 'Проверка реквизитов', 'Поиск ключей и паролей'];
-  const [i, setI] = useState(0);
-  useEffect(() => { const t = setInterval(() => setI((x) => Math.min(x + 1, steps.length - 1)), dur / 3); return () => clearInterval(t); }, []);
-  return html`<div className="rounded-lg border border-line bg-surface p-4 rise" aria-live="polite">
-    <div className="flex items-center gap-3">
-      <svg viewBox="0 0 24 24" className="w-5 h-5 spin text-brand" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeOpacity=".2" strokeWidth="3"/><path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>
-      <div className="font-semibold">Проверка запроса…</div>
+function ProjectBar({ project, onProject, model, onModel }) {
+  const groups = ACTIONS.map(([act, label]) => [act, label, Object.entries(project.act).filter(([, a]) => a === act).map(([t]) => TYPES[t].label)]).filter((g) => g[2].length);
+  return html`<section className="ig-card ig-pad">
+    <div className="eyebrow mb-2">Проект клиента</div>
+    <div className="ig-seg ig-seg3" role="group" aria-label="Проект клиента">
+      ${PROJECTS.map((p) => html`<button key=${p.id} id=${'prj-' + p.id} className="ig-opt" aria-pressed=${p.id === project.id} onClick=${() => onProject(p)}>
+        <span className="ig-opt-t">${p.name}</span><span className="ig-opt-s">${p.badge}</span></button>`)}
     </div>
-    <div className="mt-3 h-1.5 rounded-full bg-sunken overflow-hidden"><div className="bar h-full bg-brand rounded-full" style=${{ '--dur': dur + 'ms' }}></div></div>
-    <div className="mt-2 text-[13px] text-muted">${steps[i]}…</div>
+    <p className="ig-note">${project.note}</p>
+    <div className="ig-rules">
+      ${groups.map(([act, label, list]) => html`<span key=${act} className=${'ig-rule ig-rule-' + act}><b>${label}:</b> ${list.map(lc).join(', ')}</span>`)}
+      <span className=${'ig-rule ' + (project.noForeign ? 'ig-rule-block' : 'ig-rule-ok')}><b>Зарубежные нейросети:</b> ${project.noForeign ? 'запрещены' : 'разрешены'}</span>
+    </div>
+    <div className="eyebrow mb-2 ig-mt">Нейросеть</div>
+    <div className="ig-seg ig-seg4" role="group" aria-label="Нейросеть">
+      ${MODELS.map((m) => {
+        const off = project.noForeign && m.foreign;
+        return html`<button key=${m.id} id=${'mdl-' + m.id} className=${'ig-opt' + (off ? ' ig-off' : '')} aria-pressed=${m.id === model.id} onClick=${() => onModel(m)}>
+          <span className="ig-opt-t">${m.id}</span><span className="ig-opt-s">${off ? 'запрещена договором' : m.note}</span></button>`;
+      })}
+    </div>
+  </section>`;
+}
+
+function Hero({ onDemo }) {
+  return html`<section className="ig-card ig-pad ig-hero rise">
+    <h1>Сотрудники пишут в нейросеть как обычно — данные клиентов остаются в компании</h1>
+    <p>«Инфогрань» находит в запросе данные клиента, заменяет их метками до отправки и возвращает настоящие значения в ответ. Правила берутся из проекта и договора клиента.</p>
+    <ol className="ig-steps">
+      <li><b>1</b><span>Выберите проект клиента: у каждого свои правила</span></li>
+      <li><b>2</b><span>Нажмите пример или напишите свой запрос</span></li>
+      <li><b>3</b><span>Сравните, что увидела нейросеть и что получили вы</span></li>
+    </ol>
+    <button id="demo-run" className="ig-btn ig-pri" onClick=${onDemo}>Показать на примере ${icons.send('w-4 h-4')}</button>
+  </section>`;
+}
+
+function UserMsg({ m, onAct }) {
+  const a = m.a;
+  const shown = a && (a.decision === 'warn' && m.status === 'sent' ? (m.approved === true ? 'anon' : 'warn') : a.decision);
+  const qiNote = m.status === 'sent' && m.qiNow && m.qiNow.length > 0 && m.qiNow.length < 3
+    ? `признаки клиента в диалоге: ${m.qiNow.map((c) => lc(TYPES[c].label)).join(', ')} (${m.qiNow.length} из 3)` : null;
+  const summary = m.status !== 'sent' ? '' : [
+    m.tagged ? `заменено метками: ${m.tagged}` : '',
+    m.scaled ? `${m.scaled} ${plural(m.scaled, 'сумма изменена', 'суммы изменены', 'сумм изменено')} одним коэффициентом` : '',
+    !m.tagged && !m.scaled ? 'чувствительных данных нет, ушло как есть' : '',
+    m.approved ? 'по решению сотрудника' : '',
+  ].filter(Boolean).join(' · ');
+  const blockedTypes = a ? a.findings.filter((f) => f.action === 'block') : [];
+  return html`<div className="ig-user rise" id=${'msg-' + m.id}>
+    <div className="ig-ubox">${a ? html`<${Highlighted} text=${m.text} findings=${a.findings} qi=${a.qi}/>` : html`<p className="ig-text">${m.text}</p>`}</div>
+    ${m.status === 'checking' && html`<div className="ig-status"><${Spinner}/>«Инфогрань» проверяет запрос…</div>`}
+    ${m.status === 'sent' && html`<div className="ig-status"><${Badge} decision=${shown}/><span>${summary}</span>${qiNote && html`<span className="ig-qi-note">${qiNote}</span>`}</div>`}
+    ${m.status === 'blocked-done' && html`<div className="ig-status"><${Badge} decision="block"/><span>Не отправлено — исправленный запрос ниже</span></div>`}
+    ${m.status === 'cancelled' && html`<div className="ig-status"><${Badge} decision="warn"/><span>Отправка отменена — запрос не покинул компанию</span></div>`}
+    ${m.status === 'pending' && html`<div className="ig-act ig-act-warn" role="alert">
+      <div className="ig-act-h">${icons.alert('w-5 h-5')}Нужно ваше решение</div>
+      <ul>${a.reasons.map((r, i) => html`<li key=${i}>${r}</li>`)}</ul>
+      <p>«Инфогрань» заменит эти данные метками: нейросеть ответит по сути, а настоящие значения вернутся в ответ уже внутри компании.</p>
+      <div className="ig-btns">
+        <button id="act-anon" className="ig-btn ig-pri" onClick=${() => onAct(m, 'anon')}>${a.mosaic ? 'Обобщить и отправить' : 'Обезличить и отправить'}</button>
+        <button id="act-asis" className="ig-btn" onClick=${() => onAct(m, 'asis')}>Отправить как есть</button>
+        <button className="ig-btn" onClick=${() => onAct(m, 'cancel')}>Отменить</button>
+      </div>
+    </div>`}
+    ${m.status === 'blocked' && html`<div className="ig-act ig-act-block" role="alert">
+      <div className="ig-act-h">${icons.lock('w-5 h-5')}Запрос не отправлен</div>
+      <ul>${a.reasons.map((r, i) => html`<li key=${i}>${r}</li>`)}</ul>
+      <div className="ig-btns">
+        ${a.modelBlocked && html`<button id="act-switch" className="ig-btn ig-pri" onClick=${() => onAct(m, 'switch')}>Отправить в GigaChat</button>`}
+        ${!a.modelBlocked && blockedTypes.length > 0 && html`<button id="act-strip" className="ig-btn ig-pri" onClick=${() => onAct(m, 'strip')}>Удалить запрещённое и отправить</button>`}
+      </div>
+      <p className="ig-fine">Событие записано в журнал руководителя.</p>
+    </div>`}
   </div>`;
 }
 
-function Intro() {
-  const rows = [
-    ['allow', 'данных нет — запрос уходит как есть'],
-    ['anon', 'ФИО, телефон, email заменяются метками'],
-    ['warn', 'реквизиты заказчика: решает сотрудник'],
-    ['block', 'ключи, пароли, карты, счета, паспорт'],
-  ];
-  return html`<div className="rounded-lg border border-dashed border-line p-4">
-    <div className="eyebrow mb-3">Как решает «Инфогрань»</div>
-    <ul className="grid gap-2.5">${rows.map(([d, t]) => html`<li key=${d} className="grid grid-cols-[auto,1fr] items-center gap-3 text-[14px]"><span className="w-[164px]"><${Badge} decision=${d}/></span><span className="text-muted min-w-0">${t}</span></li>`)}</ul>
+function AiMsg({ m, user, onPeek }) {
+  return html`<div className="ig-ai rise" id=${'msg-' + m.id}>
+    <div className="ig-who">${icons.bot('w-3.5 h-3.5')}${m.model}</div>
+    <div className="ig-abox">${m.typing ? html`<div className="ig-status ig-left"><${Spinner}/>${m.model} отвечает…</div>` : html`<${Rich} text=${m.restored} marks=${m.restoredMarks} mode="restored"/>`}</div>
+    ${!m.typing && html`<div className="ig-ok">
+      ${icons.shield('w-4 h-4')}<span>${m.protectedN ? `Данные не покинули компанию · восстановлено значений: ${m.restoredMarks.length}` : 'Прямых данных клиента в запросе нет'}</span>
+      ${m.protectedN > 0 && html`<button className="ig-link" onClick=${() => onPeek(m.id)}>${m.peek ? 'Скрыть' : 'Что увидела нейросеть'}</button>`}
+    </div>`}
+    ${m.peek && html`<div className="ig-peek rise">
+      <h4>Запрос, который получил ${m.model}</h4>
+      <${Rich} text=${user.sent} marks=${user.scaledMarks} mode="raw"/>
+      <h4>Ответ ${m.model} до восстановления</h4>
+      <${Rich} text=${m.raw} marks=${m.rawMarks} mode="raw"/>
+      <p className="ig-fine">Метки и коэффициент сумм хранит сервер «Инфограни» в контуре компании. ${user.scaled ? 'Суммы умножены на один секретный коэффициент: доли и проценты не изменились, а настоящих сумм нейросеть не знает.' : ''}</p>
+    </div>`}
   </div>`;
 }
 
-function ResultCard({ r, onDecide, openJournal }) {
-  const { analysis: a } = r;
-  const showSent = a.decision === 'allow' || a.decision === 'anon' || (a.decision === 'warn' && r.outcome === 'anonymized');
-  return html`<article className="rounded-xl border border-line bg-surface shadow-sm rise overflow-hidden">
-    <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 border-b border-line">
-      <${Badge} decision=${a.decision} big/>
-      <div className="text-[13px] text-muted tnum">Время проверки: <b className="text-ink font-semibold">${fmtSec(r.ms)}</b></div>
-    </header>
+const newDialog = () => ({ qi: new Set(), vault: { byValue: {}, counters: {}, dict: {} }, k: pickK() });
 
-    <div className="p-4 grid gap-4">
-      <div>
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="eyebrow">Запрос сотрудника</span>
-          ${a.types.length ? a.types.map((t) => html`<${TypeChip} key=${t} type=${t}/>`) : html`<span className="text-[12.5px] text-ok font-medium">чувствительных данных не найдено</span>`}
-        </div>
-        <div className="rounded-lg bg-sunken px-3.5 py-2.5 text-[14.5px]"><${Highlighted} text=${a.text} findings=${a.findings}/></div>
-      </div>
-
-      ${a.decision === 'block' && html`<div className="rounded-lg border border-block/30 bg-block-bg text-block p-4 flex gap-3">
-        ${icons.lock('w-6 h-6 shrink-0 mt-0.5')}
-        <div><div className="font-semibold text-[15.5px]">Запрос не отправлен</div>
-        <p className="mt-1 text-[14.5px]">Запрос содержит секретные данные и не был отправлен. Событие передано в службу ИБ.</p></div>
-      </div>`}
-
-      ${a.decision === 'warn' && r.outcome === 'pending' && html`<div className="rounded-lg border border-warn/30 bg-warn-bg text-warn p-4 flex flex-wrap items-center gap-3">
-        ${icons.alert('w-5 h-5 shrink-0')}<span className="font-semibold flex-1 min-w-[12rem]">В запросе реквизиты заказчика. Ожидает решения.</span>
-        <button onClick=${() => onDecide('reopen')} className="h-9 px-3 rounded-md bg-surface text-ink border border-line font-semibold text-[13.5px]">Выбрать действие</button>
-      </div>`}
-
-      ${a.decision === 'warn' && r.outcome === 'cancelled' && html`<div className="rounded-lg border border-line bg-sunken p-4 flex gap-3">
-        ${icons.x('w-5 h-5 shrink-0 mt-0.5 text-muted')}<div><div className="font-semibold">Отправка отменена сотрудником</div><p className="text-[14px] text-muted mt-0.5">Запрос не покинул компанию. Событие записано в журнал ИБ.</p></div>
-      </div>`}
-
-      ${showSent && html`<div className="grid gap-3">
-        <${Panel} label=${r.sent === a.text ? 'Ушло в ИИ без изменений' : 'Что реально ушло в ИИ'} icon=${icons.send('w-3.5 h-3.5')}>
-          <${TagText} text=${r.sent}/>
-        <//>
-        ${r.sent === a.text
-          ? html`<${Panel} label="Ответ ИИ" icon=${icons.bot('w-3.5 h-3.5')}><${TagText} text=${r.answer}/><//>`
-          : html`<div className="grid gap-3 md:grid-cols-2">
-              <${Panel} label="Ответ ИИ (с метками)" icon=${icons.bot('w-3.5 h-3.5')}><${TagText} text=${r.answer}/><//>
-              <${Panel} label="Ответ сотруднику" icon=${icons.user('w-3.5 h-3.5')} tone="!border-ok/40"><${TagText} text=${r.answer} restoreDict=${r.dict}/><//>
-            </div>
-            <div className="flex items-center gap-2.5 rounded-lg bg-ok-bg text-ok px-4 py-3 font-semibold">${icons.shield('w-5 h-5 shrink-0')}Данные не покинули компанию</div>
-            <p className="text-[12.5px] text-muted -mt-1">Словарь «метка → значение» хранится только в памяти и не передаётся в ИИ: ${Object.keys(r.dict).length} ${plural(Object.keys(r.dict).length, 'метка', 'метки', 'меток')}.</p>`}
-      </div>`}
-    </div>
-
-    <footer className="px-4 py-3 border-t border-line bg-sunken/60 flex items-center justify-between gap-3 text-[13px]">
-      <span className="text-muted">Событие записано в журнал ИБ</span>
-      <button onClick=${openJournal} className="font-semibold text-brand inline-flex items-center gap-1 whitespace-nowrap">Открыть журнал ${icons.send('w-3.5 h-3.5')}</button>
-    </footer>
-  </article>`;
-}
-function plural(n, one, few, many) {
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-  return many;
-}
-
-function WarnDialog({ onAnon, onCancel, types }) {
-  useEffect(() => { document.getElementById('warn-anon')?.focus(); }, []);
-  return html`<div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[rgb(var(--ink)/.45)]" role="dialog" aria-modal="true" aria-labelledby="warn-title">
-    <div className="w-full sm:max-w-md bg-surface sm:rounded-xl rounded-t-2xl shadow-2xl rise"
-         style=${{ paddingLeft: 'max(20px, env(safe-area-inset-left, 0px))', paddingRight: 'max(20px, env(safe-area-inset-right, 0px))', paddingTop: '20px', paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))' }}>
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-warn-bg text-warn grid place-items-center shrink-0">${icons.alert('w-5 h-5')}</div>
-        <div className="min-w-0">
-          <h2 id="warn-title" className="text-[17px] font-bold">В запросе реквизиты заказчика</h2>
-          <p className="mt-1 text-[14px] text-muted">Найдено: ${types.map((t) => TYPES[t].label).join(', ')}. Их можно заменить метками — ИИ ответит по сути, а реальные значения вернутся в ответ уже внутри компании.</p>
-        </div>
-      </div>
-      <div className="mt-5 grid gap-2 sm:grid-cols-2">
-        <button id="warn-anon" onClick=${onAnon} className="h-11 rounded-lg bg-brand text-on-brand font-semibold sm:order-2">Обезличить и отправить</button>
-        <button onClick=${onCancel} className="h-11 rounded-lg border border-line font-semibold text-ink sm:order-1">Отменить</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function EmployeeTab({ onLog, onUpdateLog, openJournal }) {
+function EmployeeTab({ onLog, onUpdateLog }) {
+  const [project, setProject] = useState(PROJECTS[0]);
+  const [model, setModel] = useState(MODELS[0]);
+  const [msgs, setMsgs] = useState([]);
   const [text, setText] = useState('');
-  const [busy, setBusy] = useState(null);       // { dur }
-  const [result, setResult] = useState(null);
-  const [dialog, setDialog] = useState(false);
-  const resultRef = useRef(null);
+  const dlg = useRef(newDialog());
+  const timers = useRef([]);
+  const endRef = useRef(null);
+  const busy = msgs.some((m) => m.status === 'checking' || m.typing);
 
-  const submit = () => {
-    const t = text.trim();
-    if (!t || busy) return;
-    const dur = 600 + Math.round(Math.random() * 400);
-    setResult(null);
-    setBusy({ dur });
-    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
-    setTimeout(() => {
-      const analysis = analyze(t);
-      const r = { analysis, ms: dur, outcome: null, sent: null, answer: null, dict: {} };
-      if (analysis.decision === 'allow') { r.sent = t; r.answer = mockAnswer(t); }
-      if (analysis.decision === 'anon') { const an = anonymize(t, analysis.findings); r.sent = an.sent; r.dict = an.dict; r.answer = mockAnswer(an.sent); }
-      if (analysis.decision === 'warn') { r.outcome = 'pending'; setDialog(true); }
-      r.logId = onLog(analysis, r.outcome);
-      setBusy(null);
-      setResult(r);
-    }, dur);
+  const later = (fn, ms) => timers.current.push(setTimeout(fn, ms));
+  const scrollEnd = () => later(() => endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 60);
+  const patch = (id, ch) => setMsgs((l) => l.map((m) => (m.id === id ? { ...m, ...ch } : m)));
+  const reset = () => { timers.current.forEach(clearTimeout); timers.current = []; dlg.current = newDialog(); setMsgs([]); };
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  const send = (t, p = project, mdl = model) => {
+    const id = uid();
+    setMsgs((l) => [...l, { id, role: 'user', text: t, status: 'checking' }]);
+    scrollEnd();
+    later(() => {
+      const a = analyze(t, p, mdl, dlg.current.qi);
+      const logId = onLog(makeEvent({ time: nowTime(), employee: 'Вы', dept: 'Ваш отдел', project: p, model: mdl, a, outcome: a.decision === 'warn' ? 'pending' : null, isNew: true }));
+      if (a.decision === 'allow' || a.decision === 'anon') deliver(id, a, mdl, false);
+      else patch(id, { a, status: a.decision === 'warn' ? 'pending' : 'blocked', logId, p, mdl });
+      scrollEnd();
+    }, 450);
   };
 
-  const decideWarn = (choice) => {
-    if (choice === 'reopen') return setDialog(true);
-    setDialog(false);
-    setResult((r) => {
-      const n = { ...r, outcome: choice };
-      if (choice === 'anonymized') { const an = anonymize(r.analysis.text, r.analysis.findings); n.sent = an.sent; n.dict = an.dict; n.answer = mockAnswer(an.sent); }
-      onUpdateLog(r.logId, choice);
-      return n;
-    });
+  const deliver = (id, a, mdl, approved) => {
+    const d = dlg.current;
+    // approved: true — сотрудник обезличил предупреждения; 'asis' — отправил их как есть; false — решения не требовалось
+    const items = approved === true
+      ? [...a.findings.map((f) => ({ ...f, action: f.action === 'warn' ? 'anon' : f.action })), ...(a.mosaic ? a.qi.map((f) => ({ ...f, action: 'anon' })) : [])]
+      : a.findings.filter((f) => f.action !== 'warn');
+    const tr = transform(a.text, items, d.vault, d.k);
+    if (!(approved === true && a.mosaic)) a.qi.forEach((f) => d.qi.add(f.type));
+    const tagged = items.filter((i) => i.action === 'anon').length;
+    const scaled = items.filter((i) => i.action === 'scale').length;
+    const aiId = uid();
+    setMsgs((l) => [...l.map((m) => (m.id === id ? { ...m, a, status: 'sent', approved, sent: tr.sent, scaledMarks: tr.marks, tagged, scaled, qiNow: [...d.qi] } : m)),
+                    { id: aiId, role: 'ai', model: mdl.id, typing: true, forId: id }]);
+    scrollEnd();
+    later(() => {
+      const raw = mockAnswer(tr.sent);
+      const rawMarks = scaled ? [...raw.matchAll(moneyRe())].map((x) => x[0]) : [];
+      const rs = restoreAnswer(raw, d.vault, d.k, scaled > 0);
+      patch(aiId, { typing: false, raw, rawMarks, restored: rs.text, restoredMarks: rs.marks, protectedN: tagged + scaled });
+      scrollEnd();
+    }, 750 + Math.round(Math.random() * 400));
   };
+
+  const onAct = (m, act) => {
+    if (busy) return;
+    if (act === 'anon') { onUpdateLog(m.logId, 'anonymized'); deliver(m.id, m.a, m.mdl, true); }
+    if (act === 'asis') { onUpdateLog(m.logId, 'asis'); deliver(m.id, m.a, m.mdl, 'asis'); }
+    if (act === 'cancel') { onUpdateLog(m.logId, 'cancelled'); patch(m.id, { status: 'cancelled' }); }
+    if (act === 'switch') { const g = MODELS[0]; setModel(g); patch(m.id, { status: 'blocked-done' }); send(m.text, m.p, g); }
+    if (act === 'strip') {
+      let out = '', pos = 0;
+      for (const f of m.a.findings.filter((x) => x.action === 'block')) { out += m.text.slice(pos, f.start) + '[удалено]'; pos = f.end; }
+      patch(m.id, { status: 'blocked-done' });
+      send((out + m.text.slice(pos)).replace(/,?\s*(?:СНИЛС|паспорт[а-яё]*|р\/с|карт[а-яё]*|пароль)?\s*\[удалено\]/gi, ''), m.p, m.mdl);
+    }
+  };
+
+  const runExample = (e) => {
+    if (busy) return;
+    setText('');
+    if (e.steps) { send(e.steps[0]); later(() => send(e.steps[1]), 2300); }
+    else send(e.text);
+  };
+  const submit = () => { const t = text.trim(); if (!t || busy) return; setText(''); send(t); };
+  const pickProject = (p) => { if (p.id === project.id) return; reset(); setProject(p); };
 
   return html`<div className="grid gap-4">
+    ${msgs.length === 0 && html`<${Hero} onDemo=${() => runExample(EXAMPLES[1])}/>`}
+    <${ProjectBar} project=${project} onProject=${pickProject} model=${model} onModel=${setModel}/>
+
     <div>
-      <div className="eyebrow mb-2">Примеры запросов</div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        ${EXAMPLES.map((e, i) => html`<button key=${i} id=${'ex-' + i} onClick=${() => setText(e.text)}
-          className=${`text-left rounded-lg border px-3 py-2.5 text-[13.5px] font-semibold leading-snug transition-colors ${text === e.text ? 'border-brand bg-brand-soft text-brand' : 'border-line bg-surface hover:border-brand/50'}`}>
-          <span className="block text-[11px] font-medium text-muted mb-0.5 tnum">Пример ${i + 1}</span>${e.label}</button>`)}
+      <div className="eyebrow mb-2">Примеры запросов бухгалтерии и юристов</div>
+      <div className="ig-ex">
+        ${EXAMPLES.map((e, i) => html`<button key=${i} id=${'ex-' + i} disabled=${busy} onClick=${() => runExample(e)} className="ig-exb">
+          <span className="ig-opt-s">Пример ${i + 1}</span><span className="ig-opt-t">${e.label}</span></button>`)}
       </div>
+      <p className="ig-fine">Переключите проект: тот же запрос получит другое решение.</p>
     </div>
 
+    ${msgs.length > 0 && html`<section className="ig-thread" aria-live="polite">
+          ${msgs.filter((m) => m.role === 'user' || m.role === 'ai').map((m) => m.role === 'user'
+            ? html`<${UserMsg} key=${m.id} m=${m} onAct=${onAct}/>`
+            : html`<${AiMsg} key=${m.id} m=${m} user=${msgs.find((u) => u.id === m.forId)} onPeek=${(id) => patch(id, { peek: !m.peek })}/>`)}
+          <div ref=${endRef}></div>
+        </section>`}
+
     <form onSubmit=${(e) => { e.preventDefault(); submit(); }} className="rounded-xl border border-line bg-surface shadow-sm focus-within:border-brand/60">
-      <label htmlFor="prompt" className="flex items-center justify-between px-4 pt-3 eyebrow"><span>Запрос к ИИ</span></label>
-      <textarea id="prompt" rows="4" value=${text} onInput=${(e) => setText(e.target.value)} onChange=${(e) => setText(e.target.value)}
-        onKeyDown=${(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submit(); }}
+      <label htmlFor="prompt" className="flex items-center justify-between px-4 pt-3 eyebrow"><span>Сообщение · ${project.name} · ${model.id}</span>
+        ${msgs.length > 0 && html`<button type="button" className="ig-link" onClick=${reset}>Новый диалог</button>`}</label>
+      <textarea id="prompt" rows="3" value=${text} onInput=${(e) => setText(e.target.value)} onChange=${(e) => setText(e.target.value)}
+        onKeyDown=${(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submit(); }} placeholder="Напишите запрос, как написали бы в обычный чат с ИИ"
         className="block w-full resize-y bg-transparent px-4 py-2 text-[16px] leading-relaxed outline-none placeholder:text-muted/70 min-h-[110px]"></textarea>
       <div className="flex items-center justify-between gap-3 px-3 pb-3">
         <span className="text-[12px] text-muted pl-1 hidden sm:block">Ctrl + Enter — отправить</span>
-        <button type="submit" disabled=${!text.trim() || !!busy}
+        <button type="submit" disabled=${!text.trim() || busy}
           className="ml-auto h-11 px-5 rounded-lg bg-brand text-on-brand font-semibold inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed w-full sm:w-auto justify-center">
-          Отправить в ИИ ${icons.send('w-4 h-4')}</button>
+          Отправить ${icons.send('w-4 h-4')}</button>
       </div>
     </form>
-
-    <div ref=${resultRef} className="scroll-mt-24">
-      ${busy ? html`<${Checking} dur=${busy.dur}/>` : result ? html`<${ResultCard} r=${result} onDecide=${decideWarn} openJournal=${openJournal}/>` : html`<${Intro}/>`}
-    </div>
-    ${dialog && result && html`<${WarnDialog} types=${result.analysis.types} onAnon=${() => decideWarn('anonymized')} onCancel=${() => decideWarn('cancelled')}/>`}
+    <p className="ig-fine">Демо-версия: ответы нейросети заготовлены, в интернет ничего не уходит.</p>
   </div>`;
 }
 
-/* ---------- вкладка «Журнал ИБ» ---------- */
-function Counter({ label, value, tone }) {
+/* ---------- вкладка «Руководитель» ---------- */
+function Counter({ label, value, tone, hint }) {
   return html`<div className="rounded-lg border border-line bg-surface px-3.5 py-3 min-w-0">
     <div className="flex items-center gap-1.5 text-[12.5px] text-muted font-medium leading-tight">${tone && html`<span className=${`w-2 h-2 rounded-full shrink-0 ${tone}`}></span>`}${label}</div>
     <div className="mt-1 text-[28px] font-bold tnum leading-none text-ink">${value}</div>
+    ${hint && html`<div className="ig-fine">${hint}</div>`}
   </div>`;
 }
-
 function DecisionCell({ ev }) {
   return html`<div className="grid gap-1 justify-items-start">
     <${Badge} decision=${ev.decision}/>
@@ -935,25 +1185,31 @@ function DecisionCell({ ev }) {
   </div>`;
 }
 const NewPill = () => html`<span className="inline-flex items-center rounded-full bg-brand text-on-brand text-[10.5px] font-bold uppercase tracking-wide px-1.5 py-px">новое</span>`;
+const Chips = ({ ev }) => (ev.chips.length ? ev.chips.map((c) => html`<${Chip} key=${c.type} type=${c.type} action=${c.action}/>`) : html`<span className="text-muted">—</span>`);
 
 function JournalTab({ events }) {
   const [filter, setFilter] = useState('all');
   const shown = filter === 'all' ? events : events.filter((e) => e.decision === filter);
   const count = (d) => events.filter((e) => e.decision === d).length;
-
+  const stopped = events.filter((e) => e.decision === 'block' || e.outcome === 'cancelled').length;
+  const protectedVals = events.filter((e) => e.decision !== 'allow' && e.outcome !== 'pending').reduce((s, e) => s + e.n, 0);
+  const pdSaved = events.filter((e) => e.pd && e.outcome !== 'pending').length;
   const FILTERS = [['all', 'Все', events.length], ['allow', 'Разрешено', count('allow')], ['anon', 'Обезличено', count('anon')], ['warn', 'Предупреждения', count('warn')], ['block', 'Заблокировано', count('block')]];
 
   return html`<div className="grid gap-4">
-    <div>
-      <div><div className="eyebrow">Сегодня, ${todayLabel()}</div><h2 className="text-[20px] font-bold mt-0.5">События проверки запросов</h2></div>
-    </div>
+    <div><div className="eyebrow">Сегодня, ${todayLabel()}</div><h2 className="text-[20px] font-bold mt-0.5">Как сотрудники работают с нейросетями</h2></div>
 
     <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-      <${Counter} label="Всего проверок" value=${events.length}/>
+      <${Counter} label="Запросов к нейросетям" value=${events.length}/>
       <${Counter} label="Обезличено" value=${count('anon')} tone="bg-anon"/>
-      <${Counter} label="Предупреждений" value=${count('warn')} tone="bg-warn"/>
-      <${Counter} label="Заблокировано" value=${count('block')} tone="bg-block"/>
+      <${Counter} label="Остановлено" value=${stopped} tone="bg-block" hint="запрещённые данные или нейросеть"/>
+      <${Counter} label="Защищено значений" value=${protectedVals} tone="bg-ok" hint="не ушли в нейросеть"/>
     </div>
+
+    <div className="ig-money">${icons.shield('w-6 h-6')}<div>
+      <b>Предотвращено утечек персональных данных: ${pdSaved}</b>
+      <p>Штраф за одну утечку — от 3 до 15 млн ₽. Каждое решение сотрудника видно в журнале, исходные значения в него не попадают.</p>
+    </div></div>
 
     <div className="scroll-x -mx-4 px-4 sm:mx-0 sm:px-0">
       <div role="radiogroup" aria-label="Фильтр по решению" className="flex gap-1.5 w-max">
@@ -970,11 +1226,11 @@ function JournalTab({ events }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap"><span className="font-semibold">${e.employee}</span>${e.isNew && html`<${NewPill}/>`}</div>
-            <div className="text-[12.5px] text-muted">${e.dept} · ${e.service ? e.service + ' · ' : ''}<span className="tnum">${e.time}</span></div>
+            <div className="text-[12.5px] text-muted">${e.dept} · ${e.project} · ${e.service} · <span className="tnum">${e.time}</span></div>
           </div>
           <${DecisionCell} ev=${e}/>
         </div>
-        ${e.types.length > 0 && html`<div className="flex flex-wrap gap-1 mt-2.5">${e.types.map((t) => html`<${TypeChip} key=${t} type=${t}/>`)}</div>`}
+        <div className="flex flex-wrap gap-1 mt-2.5"><${Chips} ev=${e}/></div>
         <div className="mono text-[12.5px] mt-2.5 rounded-md bg-sunken px-2.5 py-2 break-words text-ink/90">${e.fragment}</div>
       </li>`)}
     </ul>
@@ -982,37 +1238,30 @@ function JournalTab({ events }) {
     ${shown.length > 0 && html`<div className="hidden md:block overflow-x-auto rounded-xl border border-line bg-surface">
       <table className="w-full text-[13.5px] border-collapse">
         <thead><tr className="text-left text-muted bg-sunken/70">
-          ${['Время', 'Сотрудник', 'ИИ-сервис', 'Найдено', 'Решение', 'Фрагмент запроса'].map((h) => html`<th key=${h} className="px-3 py-2.5 font-semibold text-[12px] uppercase tracking-[.06em] whitespace-nowrap">${h}</th>`)}
+          ${['Время', 'Сотрудник', 'Проект', 'Найдено', 'Решение', 'Фрагмент запроса'].map((h) => html`<th key=${h} className="px-3 py-2.5 font-semibold text-[12px] uppercase tracking-[.06em] whitespace-nowrap">${h}</th>`)}
         </tr></thead>
         <tbody>${shown.map((e) => html`<tr key=${e.id} className=${`border-t border-line align-top ${e.isNew ? 'flash bg-brand-soft/40' : ''}`}>
           <td className="px-3 py-3 tnum whitespace-nowrap">${e.time}${e.isNew && html`<div className="mt-1"><${NewPill}/></div>`}</td>
           <td className="px-3 py-3 whitespace-nowrap"><div className="font-semibold">${e.employee}</div><div className="text-muted text-[12.5px]">${e.dept}</div></td>
-          <td className="px-3 py-3 whitespace-nowrap">${e.service || html`<span className="text-muted">—</span>`}</td>
-          <td className="px-3 py-3"><div className="flex flex-wrap gap-1 max-w-[170px]">${e.types.length ? e.types.map((t) => html`<${TypeChip} key=${t} type=${t}/>`) : html`<span className="text-muted">—</span>`}</div></td>
+          <td className="px-3 py-3 whitespace-nowrap"><div className="font-semibold">${e.project}</div><div className="text-muted text-[12.5px]">${e.service}</div></td>
+          <td className="px-3 py-3"><div className="flex flex-wrap gap-1 max-w-[170px]"><${Chips} ev=${e}/></div></td>
           <td className="px-3 py-3"><${DecisionCell} ev=${e}/></td>
           <td className="px-3 py-3 mono text-[12.5px] min-w-[240px] break-words">${e.fragment}</td>
         </tr>`)}</tbody>
       </table>
     </div>`}
 
-    <p className="text-[12.5px] text-muted">Исходные значения в журнал не попадают: служба ИБ видит тип данных и замаскированный фрагмент.</p>
+    <p className="text-[12.5px] text-muted">Исходные значения в журнал не попадают: руководитель видит тип данных и замаскированный фрагмент.</p>
   </div>`;
 }
 
 /* ---------- приложение ---------- */
 function App() {
   const [tab, setTab] = useState(() => (location.hash === '#journal' ? 'journal' : 'employee'));
-  const [events, setEvents] = useState(() => SEED.map((s) => makeEvent(...s)));
+  const [events, setEvents] = useState(seedEvents);
   const [unseen, setUnseen] = useState(0);
-
   const go = (t) => { setTab(t); if (t === 'journal') setUnseen(0); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-
-  const onLog = (analysis, outcome) => {
-    const ev = { id: nextId++, time: nowTime(), employee: 'Вы', dept: 'Ваш отдел', service: '', types: analysis.types, decision: analysis.decision, fragment: analysis.masked, outcome, isNew: true };
-    setEvents((list) => [ev, ...list]);
-    setUnseen((n) => n + 1);
-    return ev.id;
-  };
+  const onLog = (ev) => { setEvents((list) => [ev, ...list]); setUnseen((n) => n + 1); return ev.id; };
   const onUpdateLog = (id, outcome) => setEvents((list) => list.map((e) => (e.id === id ? { ...e, outcome } : e)));
 
   return html`<div className="min-h-full flex flex-col">
@@ -1023,9 +1272,8 @@ function App() {
       </div>
     </header>
     <main className="gutter max-w-4xl w-full mx-auto py-5 flex-1">
-      ${tab === 'employee'
-        ? html`<${EmployeeTab} onLog=${onLog} onUpdateLog=${onUpdateLog} openJournal=${() => go('journal')}/>`
-        : html`<${JournalTab} events=${events}/>`}
+      <div hidden=${tab !== 'employee'}><${EmployeeTab} onLog=${onLog} onUpdateLog=${onUpdateLog}/></div>
+      ${tab === 'journal' && html`<${JournalTab} events=${events}/>`}
     </main>
   </div>`;
 }
